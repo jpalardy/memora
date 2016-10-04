@@ -20,6 +20,7 @@ var Card = React.createClass({
     ACTIONS.flipCard(true);
   },
   select: function () {
+    if (!mouseSelectionAllowed) { return; }
     ACTIONS.selectCard(this.props.card);
   },
   render: function () {

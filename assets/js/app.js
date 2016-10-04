@@ -2,6 +2,8 @@
 
 var TODAY = moment().format('YYYY-MM-DD');
 
+var mouseSelectionAllowed = true;
+
 //-------------------------------------------------
 
 var groupsOf = function (arr, count) {
@@ -108,6 +110,13 @@ var ACTIONS = (function () {
   };
 
   exports.selectDiff = function (dx, dy, lineCount) {
+    //-------------------------------------------------
+    // disable mouse selection after a move
+    mouseSelectionAllowed = false;
+    setTimeout(function () {
+      mouseSelectionAllowed = true;
+    }, 250);
+    //-------------------------------------------------
     if (!SELECTED_CARD) {
       dx = 0;
       dy = 0;
