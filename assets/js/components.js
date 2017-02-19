@@ -1,4 +1,4 @@
-/* global React, Scheduler, ACTIONS, TODAY */
+/* global React, Scheduler, ACTIONS, TODAY, mouseSelectionAllowed */
 
 var utils = {
   pluralize: function (count, singular, plural) {
