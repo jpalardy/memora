@@ -48,11 +48,6 @@ var ACTIONS = (function () {
     ReactDOM.render(React.createElement(Session, {decks: DECKS}), document.getElementById('decks'));
   };
 
-  exports.setLimit = function (deck, limit) {
-    deck.limit = limit;
-    renderDecks();
-  };
-
   var fetchDecks = exports.fetchDecks = function () {
     fetch('/decks.json').then(function (response) {
       return response.json();

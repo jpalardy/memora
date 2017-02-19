@@ -53,30 +53,32 @@ var Card = React.createClass({
 
 //-------------------------------------------------
 
-var getLimit = function (deck) {
-  var limit = deck.limit;
+var getLimit = function (limit, cards) {
   if (limit) {
-    return limit;                  // explicit limit
+    return limit;             // explicit limit
   }
-  if (deck.cards.length < 16) {    // tolerate 13..15
-    return deck.cards.length;
+  if (cards.length < 16) {    // tolerate 13..15
+    return cards.length;
   }
-  return 12;                       // default to 12 (soft)
+  return 12;                  // default to 12 (soft)
 };
 
 var Deck = React.createClass({
   displayName: 'deck',
+  getInitialState: function () {
+    return {};
+  },
   handleClick: function () {
-    var limit = prompt('How many cards', getLimit(this.props.deck));
+    var limit = prompt('How many cards', getLimit(this.state.limit, this.props.deck.cards));
     limit = parseInt(limit, 10);
     if (!isNaN(limit)) {
-      ACTIONS.setLimit(this.props.deck, limit);
+      this.setState({limit: limit});
     }
   },
   render: function () {
     var cards = this.props.deck.cards;
     var subtext = utils.pluralize(cards.length, 'card');
-    var limit = getLimit(this.props.deck);
+    var limit = getLimit(this.state.limit, this.props.deck.cards);
     if (limit) {
       if (limit < cards.length) {
         subtext = limit + ' of ' + subtext;
