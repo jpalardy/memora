@@ -72,6 +72,7 @@ var Deck = React.createClass({
     var limit = prompt('How many cards', getLimit(this.state.limit, this.props.deck.cards));
     limit = parseInt(limit, 10);
     if (!isNaN(limit)) {
+      this.props.deck.limit = limit; // used in app.js
       this.setState({limit: limit});
     }
   },

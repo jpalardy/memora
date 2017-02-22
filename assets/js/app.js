@@ -118,7 +118,7 @@ var ACTIONS = (function () {
     }
     var lines = [];
     DECKS.forEach(function (deck) {
-      lines = lines.concat(groupsOf(deck.cards.slice(0, getLimit(deck)), lineCount));
+      lines = lines.concat(groupsOf(deck.cards.slice(0, getLimit(deck.limit, deck.cards)), lineCount));
     });
     if (lines.length === 0) {
       return;
