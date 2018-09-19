@@ -38,6 +38,9 @@ var scrollToSelected = function () {
 
 //-------------------------------------------------
 
+// global state for deck limits...
+var LIMITS = {};
+
 var ACTIONS = (function () {
   var DECKS;         // contains the decks, used to update state
   var SELECTED_CARD; // card with focus
@@ -118,7 +121,7 @@ var ACTIONS = (function () {
     }
     var lines = [];
     DECKS.forEach(function (deck) {
-      lines = lines.concat(groupsOf(deck.cards.slice(0, getLimit(deck.limit, deck.cards)), lineCount));
+      lines = lines.concat(groupsOf(deck.cards.slice(0, getLimit(LIMITS[deck.filename], deck.cards)), lineCount));
     });
     if (lines.length === 0) {
       return;
