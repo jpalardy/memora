@@ -1,94 +1,89 @@
-/* global React, ReactDOM, moment, Scheduler, Session, getLimit */
+/* global React, ReactDOM, moment, scheduler, Session, getLimit, document, window, fetch, Headers */
 
-var TODAY = moment().format('YYYY-MM-DD');
-
-var mouseSelectionAllowed = true;
+const TODAY = moment().format("YYYY-MM-DD");
+let mouseSelectionAllowed = true;
 
 //-------------------------------------------------
 
-var groupsOf = function (arr, count) {
-  var result = [];
-  for (var i = 0; i < arr.length; i += count) {
+function clamp(value, min, max) {
+  if (value < min) {
+    return min;
+  }
+  if (value > max) {
+    return max;
+  }
+  return value;
+}
+
+function groupsOf(arr, count) {
+  const result = [];
+  for (let i = 0; i < arr.length; i += count) {
     result.push(arr.slice(i, i + count));
   }
   return result;
-};
+}
 
-var scrollToSelected = function () {
-  var selected = document.getElementsByClassName('selected')[0];
+function scrollToSelected() {
+  const selected = document.getElementsByClassName("selected")[0];
   if (!selected) {
     return;
   }
-  var height     = selected.offsetHeight;
-  var cardTop    = selected.offsetTop;
-  var cardBot    = cardTop + height;
-  var scrollTop  = window.scrollY;
-  var scrollBot  = window.innerHeight + scrollTop;
-  var paddingTop = 65;
-  var paddingBot = 10;
+  const height = selected.offsetHeight;
+  const cardTop = selected.offsetTop;
+  const cardBot = cardTop + height;
+  const scrollTop = window.scrollY;
+  const scrollBot = window.innerHeight + scrollTop;
+  const paddingTop = 65;
+  const paddingBot = 10;
   if (cardTop < scrollTop + paddingTop) {
     window.scrollTo(0, cardTop - paddingTop);
     return;
   }
   if (cardBot > scrollBot - paddingBot) {
-    window.scrollTo(0, cardBot - window.innerHeight + paddingBot);
-    return;
+    window.scrollTo(0, cardBot - window.innerHeight + paddingBot); // eslint-disable-line no-mixed-operators
   }
-};
+}
 
 //-------------------------------------------------
 
 // global state for deck limits...
-var LIMITS = {};
+const LIMITS = {};
 
-var ACTIONS = (function () {
-  var DECKS;         // contains the decks, used to update state
-  var SELECTED_CARD; // card with focus
+const ACTIONS = (() => {
+  let DECKS; // contains the decks, used to update state
+  let SELECTED_CARD; // card with focus
 
-  var exports = {};
+  const exports = {};
 
-  var renderDecks = exports.renderDecks = function () {
-    ReactDOM.render(React.createElement(Session, {decks: DECKS}), document.getElementById('decks'));
+  exports.renderDecks = () => {
+    ReactDOM.render(React.createElement(Session, {decks: DECKS}), document.getElementById("decks"));
   };
 
-  var fetchDecks = exports.fetchDecks = function () {
-    fetch('/decks.json').then(function (response) {
-      return response.json();
-    }).then(function (decks) {
-      DECKS = decks;
-      //..............
-      // augment, shuffle
-      DECKS.forEach(function (deck) {
-        if (!deck.cards) {
-          deck.cards = [];
-        }
-        deck.cards = deck.cards.sort(function () { return 0.5 - Math.random(); });
+  exports.fetchDecks = () => {
+    fetch("/decks.json")
+      .then(response => response.json())
+      .then(decks => {
+        DECKS = decks;
+        // augment, shuffle
+        DECKS.forEach(deck => {
+          deck.cards = (deck.cards || []).sort(() => 0.5 - Math.random());
+        });
+        exports.renderDecks();
       });
-      //..............
-      renderDecks();
-    }).catch(function (err) {
-      throw err;
-    });
   };
 
-  exports.saveDecks = function () {
-    var updatedDecks = DECKS.filter(function (deck) {
-      return deck.cards.some(function (card) {
-        return card.mark !== undefined;
-      });
-    }).map(function (deck) {
-      var result = {};
-      result.filename = deck.filename;
-      result.updates = {};
-      deck.cards.filter(function (card) {
-        return card.mark !== undefined;
-      }).forEach(function (card) {
-        var days = Scheduler.daysUntilNext(card.mark, card.last);
-        var next = moment(TODAY).add(days, 'days').format('YYYY-MM-DD');
-        result.updates[card.question] = {
-          mark:     card.mark,
-          next:     next,
-        };
+  exports.saveDecks = () => {
+    const updatedDecks = DECKS.filter(deck => deck.cards.some(card => card.mark !== undefined)).map(deck => {
+      const result = {
+        filename: deck.filename,
+        updates: {},
+      };
+      deck.cards.filter(card => card.mark !== undefined).forEach(card => {
+        const days = scheduler.daysUntilNext(card.mark, card.last);
+        const next = moment(TODAY)
+          .add(days, "days")
+          .format("YYYY-MM-DD");
+        result.updates[card.question] = {mark: card.mark, next};
       });
       return result;
     });
@@ -96,22 +91,18 @@ var ACTIONS = (function () {
       return; // don't save... no point
     }
     SELECTED_CARD = null;
-    fetch('/decks', {
-      method: 'POST',
-      headers: new Headers({'Content-Type': 'application/json'}),
+    fetch("/decks", {
+      method: "POST",
+      headers: new Headers({"Content-Type": "application/json"}),
       body: JSON.stringify(updatedDecks),
-    }).then(function () {
-      fetchDecks();
-    }).catch(function (err) {
-      throw err;
-    });
+    }).then(exports.fetchDecks);
   };
 
-  exports.selectDiff = function (dx, dy, lineCount) {
+  exports.selectDiff = (dx, dy, lineCount) => {
     //-------------------------------------------------
     // disable mouse selection after a move
     mouseSelectionAllowed = false;
-    setTimeout(function () {
+    setTimeout(() => {
       mouseSelectionAllowed = true;
     }, 250);
     //-------------------------------------------------
@@ -119,138 +110,146 @@ var ACTIONS = (function () {
       dx = 0;
       dy = 0;
     }
-    var lines = [];
-    DECKS.forEach(function (deck) {
-      lines = lines.concat(groupsOf(deck.cards.slice(0, getLimit(LIMITS[deck.filename], deck.cards)), lineCount));
+    let lines = [];
+    DECKS.forEach(deck => {
+      lines = lines.concat(groupsOf(deck.cards.slice(0, getLimit(LIMITS[deck.filename], deck.cards.length)), lineCount));
     });
     if (lines.length === 0) {
       return;
     }
-    var x = 0;
-    var y = 0;
-    lines.some(function (line, i) {
+    let x = 0;
+    let y = 0;
+    lines.some((line, i) => {
       if (line.indexOf(SELECTED_CARD) >= 0) {
         x = line.indexOf(SELECTED_CARD);
         y = i;
         return true;
       }
+      return false;
     });
-    var constraint = function (value, min, max) {
-      if (value < min) { return min; }
-      if (value > max) { return max; }
-      return value;
-    };
-    // wrap left
-    if (x === 0 && dx === -1 && y > 0) {
-      dx = 0;
-      x  = lineCount;
-      y  = y - 1;
+    if (x === 0 && dx === -1 && y > 0) { // wrap left
+      x = lineCount;
+      y -= 1;
+    } else if (x === lines[y].length - 1 && dx === 1 && y < lines.length - 1) { // wrap right
+      x = 0;
+      y += 1;
+    } else {
+      y = clamp(y + dy, 0, lines.length - 1);
+      x = clamp(x + dx, 0, lines[y].length - 1);
     }
-    // wrap right
-    if (x === lines[y].length - 1 && dx === 1 && y < lines.length - 1) {
-      dx = 0;
-      x  = 0;
-      y  = y + 1;
-    }
-    y = constraint(y + dy, 0, lines.length - 1);
-    x = constraint(x + dx, 0, lines[y].length - 1);
     exports.selectCard(lines[y][x]);
-    setTimeout(function () {
+    setTimeout(() => {
       scrollToSelected();
     }, 100);
   };
 
-  exports.selectCard = function (card) {
-    if (!card) { return; }
+  exports.selectCard = card => {
+    if (!card) {
+      return;
+    }
     if (SELECTED_CARD) {
       delete SELECTED_CARD.flipped;
       delete SELECTED_CARD.selected;
     }
     card.selected = true;
     SELECTED_CARD = card;
-    renderDecks();
+    exports.renderDecks();
   };
 
-  exports.markCard = function (mark) {
+  exports.markCard = mark => {
     if (!SELECTED_CARD) {
       return;
     }
     SELECTED_CARD.mark = mark;
-    renderDecks();
+    exports.renderDecks();
   };
 
-  exports.flipCard = function (flipped) {
+  exports.flipCard = (flipped = !SELECTED_CARD.flipped) => {
     if (!SELECTED_CARD) {
       return;
     }
-    if (flipped === undefined) {
-      flipped = !SELECTED_CARD.flipped;
-    }
     SELECTED_CARD.flipped = flipped;
-    renderDecks();
+    exports.renderDecks();
   };
 
   return exports;
-}());
+})();
 
 //-------------------------------------------------
 
-window.addEventListener("keydown", function (e) {
-  var code = e.keyCode;
-  if (code === 89) {  // y => 1
-    ACTIONS.markCard(1);
-    return;
-  }
-  if (code === 78) {  // y => 0
-    ACTIONS.markCard(0);
-    return;
-  }
-  if (code === 32) {  // space
-    e.preventDefault();
-    ACTIONS.flipCard(true);
-    return;
-  }
-  if (code === 83 && (e.ctrlKey || e.metaKey)) {  // cmd-s, ctrl-s
-    e.preventDefault();
-    ACTIONS.saveDecks();
-    return;
-  }
-  //-------------------------------------------------
-  var margins   = 30 + 10;
-  var cardWidth = 300 + 10;
-  var lineCount = Math.floor((window.innerWidth - margins) / cardWidth);
-  //-------------------------------------------------
-  if (code === 37) {  // left
-    e.preventDefault();
-    ACTIONS.selectDiff(-1, 0, lineCount);
-    return;
-  }
-  if (code === 39) {  // right
-    e.preventDefault();
-    ACTIONS.selectDiff(1, 0, lineCount);
-    return;
-  }
-  if (code === 38) {  // up
-    e.preventDefault();
-    ACTIONS.selectDiff(0, -1, lineCount);
-    return;
-  }
-  if (code === 40) {  // down
-    e.preventDefault();
-    ACTIONS.selectDiff(0, 1, lineCount);
-    return;
-  }
-  //console.log(e.keyCode);
-}, false);
+window.addEventListener(
+  "keydown",
+  e => {
+    const code = e.keyCode;
+    if (code === 89) {
+      // y => 1
+      ACTIONS.markCard(1);
+      return;
+    }
+    if (code === 78) {
+      // y => 0
+      ACTIONS.markCard(0);
+      return;
+    }
+    if (code === 32) {
+      // space
+      e.preventDefault();
+      ACTIONS.flipCard(true);
+      return;
+    }
+    if (code === 83 && (e.ctrlKey || e.metaKey)) {
+      // cmd-s, ctrl-s
+      e.preventDefault();
+      ACTIONS.saveDecks();
+      return;
+    }
+    //-------------------------------------------------
+    const margins = 30 + 10;
+    const cardWidth = 300 + 10;
+    const lineCount = Math.floor((window.innerWidth - margins) / cardWidth);
+    //-------------------------------------------------
+    if (code === 37) {
+      // left
+      e.preventDefault();
+      ACTIONS.selectDiff(-1, 0, lineCount);
+      return;
+    }
+    if (code === 39) {
+      // right
+      e.preventDefault();
+      ACTIONS.selectDiff(1, 0, lineCount);
+      return;
+    }
+    if (code === 38) {
+      // up
+      e.preventDefault();
+      ACTIONS.selectDiff(0, -1, lineCount);
+      return;
+    }
+    if (code === 40) {
+      // down
+      e.preventDefault();
+      ACTIONS.selectDiff(0, 1, lineCount);
+      // return;
+    }
+    // console.log(e.keyCode);
+  },
+  false
+);
 
-window.addEventListener("keyup", function (e) {
-  var code = e.keyCode;
-  if (code === 32) {  // space
-    e.preventDefault();
-    ACTIONS.flipCard(false);
-    return;
-  }
-}, false);
+window.addEventListener(
+  "keyup",
+  e => {
+    const code = e.keyCode;
+    if (code === 32) {
+      // space
+      e.preventDefault();
+      ACTIONS.flipCard(false);
+      // return;
+    }
+  },
+  false
+);
 
 //-------------------------------------------------
 
