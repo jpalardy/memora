@@ -1,10 +1,4 @@
-/* global React, scheduler, ACTIONS, mouseSelectionAllowed, LIMITS, prompt */
-
-const utils = {
-  pluralize(count, singular, plural = `${singular}s`) {
-    return `${count} ${count === 1 ? singular : plural}`;
-  },
-};
+/* global React, scheduler, ACTIONS, mouseSelectionAllowed, LIMITS, prompt, getLimit, pluralize */
 
 const elem = React.createElement;
 
@@ -55,17 +49,6 @@ const Card = React.createClass({
 
 //-------------------------------------------------
 
-function getLimit(limit, length) {
-  if (limit) {
-    return limit; // explicit limit
-  }
-  if (length < 16) {
-    // tolerate 13..15
-    return length;
-  }
-  return 12; // default to 12 (soft)
-}
-
 const Deck = React.createClass({
   displayName: "deck",
   getInitialState() {
@@ -81,7 +64,7 @@ const Deck = React.createClass({
   },
   render() {
     let {cards} = this.props.deck;
-    let subtext = utils.pluralize(cards.length, "card");
+    let subtext = pluralize(cards.length, "card");
     const limit = getLimit(this.state.limit, this.props.deck.cards);
     if (limit) {
       if (limit < cards.length) {

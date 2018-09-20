@@ -1,27 +1,9 @@
-/* global React, ReactDOM, moment, scheduler, Session, getLimit, document, window, fetch, Headers */
+/* global React, ReactDOM, moment, scheduler, Session, getLimit, document, window, fetch, Headers, groupsOf, clamp */
 
 const TODAY = moment().format("YYYY-MM-DD");
 let mouseSelectionAllowed = true;
 
 //-------------------------------------------------
-
-function clamp(value, min, max) {
-  if (value < min) {
-    return min;
-  }
-  if (value > max) {
-    return max;
-  }
-  return value;
-}
-
-function groupsOf(arr, count) {
-  const result = [];
-  for (let i = 0; i < arr.length; i += count) {
-    result.push(arr.slice(i, i + count));
-  }
-  return result;
-}
 
 function scrollToSelected() {
   const selected = document.getElementsByClassName("selected")[0];
