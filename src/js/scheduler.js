@@ -26,3 +26,5 @@ const scheduler = {
     return Math.max(1, this.rangeRand(...this.daysPreview(lastTime, variance)));
   },
 };
+
+module.exports = scheduler;

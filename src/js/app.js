@@ -1,7 +1,14 @@
-/* global React, ReactDOM, moment, scheduler, Session, getLimit, document, window, fetch, Headers, groupsOf, clamp */
+/* global React, ReactDOM, moment, document, window, fetch, Headers, prompt */
+
+const scheduler = require("./scheduler");
+const utils = require("./utils");
 
 const TODAY = moment().format("YYYY-MM-DD");
 let mouseSelectionAllowed = true;
+
+const elem = React.createElement;
+
+let Session;
 
 //-------------------------------------------------
 
@@ -94,7 +101,7 @@ const ACTIONS = (() => {
     }
     let lines = [];
     DECKS.forEach(deck => {
-      lines = lines.concat(groupsOf(deck.cards.slice(0, getLimit(LIMITS[deck.filename], deck.cards.length)), lineCount));
+      lines = lines.concat(utils.groupsOf(deck.cards.slice(0, utils.getLimit(LIMITS[deck.filename], deck.cards.length)), lineCount));
     });
     if (lines.length === 0) {
       return;
@@ -116,8 +123,8 @@ const ACTIONS = (() => {
       x = 0;
       y += 1;
     } else {
-      y = clamp(y + dy, 0, lines.length - 1);
-      x = clamp(x + dx, 0, lines[y].length - 1);
+      y = utils.clamp(y + dy, 0, lines.length - 1);
+      x = utils.clamp(x + dx, 0, lines[y].length - 1);
     }
     exports.selectCard(lines[y][x]);
     setTimeout(() => {
@@ -232,6 +239,97 @@ window.addEventListener(
   },
   false
 );
+
+//-------------------------------------------------
+
+const Card = React.createClass({
+  displayName: "card",
+  handleUp() {
+    ACTIONS.flipCard(false);
+  },
+  handleDown() {
+    ACTIONS.flipCard(true);
+  },
+  select() {
+    if (!mouseSelectionAllowed) {
+      return;
+    }
+    ACTIONS.selectCard(this.props.card);
+  },
+  render() {
+    const {card} = this.props;
+    const text = card.flipped ? card.answer : card.question;
+    const classNames = ["card"];
+    if (card.selected) {
+      classNames.push("selected");
+    }
+    if (card.mark !== undefined) {
+      classNames.push(card.mark ? "passed" : "failed");
+    }
+    let preview;
+    {
+      const [minDays, maxDays] = scheduler.daysPreview(card.last);
+      preview = minDays === 0 ? "1 day" : `${minDays}..${maxDays} days`;
+    }
+    return elem(
+      "div",
+      {
+        className: classNames.join(" "),
+        onMouseDown: this.handleDown,
+        onMouseUp: this.handleUp,
+        onMouseEnter: this.select,
+      },
+      elem("span", {className: "text"}, text),
+      elem("span", {className: "preview"}, preview)
+    );
+  },
+});
+
+const Deck = React.createClass({
+  displayName: "deck",
+  getInitialState() {
+    return {};
+  },
+  handleClick() {
+    // eslint-disable-next-line no-alert
+    let limit = prompt("How many cards", utils.getLimit(LIMITS[this.props.deck.filename], this.props.deck.cards.length));
+    limit = parseInt(limit, 10);
+    if (!Number.isNaN(limit)) {
+      LIMITS[this.props.deck.filename] = limit; // used in app.js
+      this.setState({limit});
+    }
+  },
+  render() {
+    let {cards} = this.props.deck;
+    let subtext = utils.pluralize(cards.length, "card");
+    const limit = utils.getLimit(this.state.limit, this.props.deck.cards);
+    if (limit) {
+      if (limit < cards.length) {
+        subtext = `${limit} of ${subtext}`;
+      }
+      cards = cards.slice(0, limit);
+    }
+    if (cards.length === 0) {
+      return false; // aka render "nothing"
+    }
+    const {filename} = this.props.deck;
+    const cardsHTML = cards.map(card => elem(Card, {card}));
+    return elem(
+      "div",
+      {className: "deck"},
+      elem("hgroup", {onClick: this.handleClick}, elem("h2", null, filename), elem("h3", {className: "subtext"}, subtext)),
+      elem("div", {className: "cards"}, cardsHTML)
+    );
+  },
+});
+
+Session = React.createClass({
+  displayName: "session",
+  render() {
+    const decksHTML = this.props.decks.map(deck => elem(Deck, {deck}));
+    return elem("div", null, decksHTML);
+  },
+});
 
 //-------------------------------------------------
 
