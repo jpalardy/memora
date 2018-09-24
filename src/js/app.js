@@ -95,8 +95,8 @@ const ACTIONS = (() => {
     }, 250);
     //-------------------------------------------------
     if (!SELECTED_CARD) {
-      dx = 0;
-      dy = 0;
+      dx = 0; // eslint-disable-line
+      dy = 0; // eslint-disable-line
     }
     let lines = [];
     DECKS.forEach(deck => {

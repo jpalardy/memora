@@ -276,8 +276,8 @@ var ACTIONS = function () {
     }, 250);
     //-------------------------------------------------
     if (!SELECTED_CARD) {
-      dx = 0;
-      dy = 0;
+      dx = 0; // eslint-disable-line
+      dy = 0; // eslint-disable-line
     }
     var lines = [];
     DECKS.forEach(function (deck) {
