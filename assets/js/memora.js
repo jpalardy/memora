@@ -106,14 +106,14 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 })({"TuEg":[function(require,module,exports) {
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-/* global moment */
+/* global dayjs */
 
 var scheduler = {
   rangeRand: function rangeRand(min, max) {
     return min + Math.floor((max - min + 1) * Math.random()); // eslint-disable-line
   },
   doubler: function doubler(lastTime) {
-    var daysSinceLast = Math.floor(moment().diff(moment(lastTime), "days", true));
+    var daysSinceLast = dayjs().diff(dayjs(lastTime), "days");
     return daysSinceLast * 2;
   },
   daysRange: function daysRange(days) {
@@ -173,12 +173,11 @@ module.exports = utils;
 },{}],"A2T1":[function(require,module,exports) {
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-/* global React, ReactDOM, moment, document, window, fetch, Headers, prompt */
+/* global dayjs, React, ReactDOM, document, window, fetch, Headers, prompt */
 
 var scheduler = require("./scheduler");
 var utils = require("./utils");
 
-var TODAY = moment().format("YYYY-MM-DD");
 var mouseSelectionAllowed = true;
 
 var elem = React.createElement;
@@ -252,7 +251,7 @@ var ACTIONS = function () {
         return card.mark !== undefined;
       }).forEach(function (card) {
         var days = scheduler.daysUntilNext(card.mark, card.last);
-        var next = moment(TODAY).add(days, "days").format("YYYY-MM-DD");
+        var next = dayjs().add(days, "days").format("YYYY-MM-DD");
         result.updates[card.question] = { mark: card.mark, next: next };
       });
       return result;

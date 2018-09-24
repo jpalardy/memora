@@ -1,4 +1,4 @@
-/* global moment */
+/* global dayjs */
 
 const scheduler = {
   rangeRand(min, max) {
@@ -6,7 +6,7 @@ const scheduler = {
   },
 
   doubler(lastTime) {
-    const daysSinceLast = Math.floor(moment().diff(moment(lastTime), "days", true));
+    const daysSinceLast = dayjs().diff(dayjs(lastTime), "days");
     return daysSinceLast * 2;
   },
 

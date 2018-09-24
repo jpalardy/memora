@@ -1,9 +1,8 @@
-/* global React, ReactDOM, moment, document, window, fetch, Headers, prompt */
+/* global dayjs, React, ReactDOM, document, window, fetch, Headers, prompt */
 
 const scheduler = require("./scheduler");
 const utils = require("./utils");
 
-const TODAY = moment().format("YYYY-MM-DD");
 let mouseSelectionAllowed = true;
 
 const elem = React.createElement;
@@ -69,7 +68,7 @@ const ACTIONS = (() => {
       };
       deck.cards.filter(card => card.mark !== undefined).forEach(card => {
         const days = scheduler.daysUntilNext(card.mark, card.last);
-        const next = moment(TODAY)
+        const next = dayjs()
           .add(days, "days")
           .format("YYYY-MM-DD");
         result.updates[card.question] = {mark: card.mark, next};
