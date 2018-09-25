@@ -116,13 +116,13 @@ const ACTIONS = (() => {
       return false;
     });
     if (x === 0 && dx === -1 && y > 0) { // wrap left
-      x = lineCount;
       y -= 1;
+      x = lines[y].length - 1;
     } else if (x === lines[y].length - 1 && dx === 1 && y < lines.length - 1) { // wrap right
-      x = 0;
       y += 1;
+      x = 0;
     } else {
-      y = utils.clamp(y + dy, 0, lines.length - 1);
+      y = utils.clamp(y + dy, 0, lines.length - 1); // order matters!
       x = utils.clamp(x + dx, 0, lines[y].length - 1);
     }
     exports.selectCard(lines[y][x]);
