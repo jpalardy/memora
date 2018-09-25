@@ -3,7 +3,22 @@
 const scheduler = require("./scheduler");
 const utils = require("./utils");
 
+function debounce(f, wait) {
+  let timeoutId = null;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => f(...args), wait);
+  };
+}
+
 let mouseSelectionAllowed = true;
+const waitAndEnableMouseSelection = debounce(() => {
+  mouseSelectionAllowed = true;
+}, 250);
+const disableTemporarilyMouseSelection = () => {
+  mouseSelectionAllowed = false;
+  waitAndEnableMouseSelection();
+};
 
 const elem = React.createElement;
 
@@ -88,11 +103,7 @@ const ACTIONS = (() => {
 
   exports.selectDiff = (dx, dy, lineCount) => {
     //-------------------------------------------------
-    // disable mouse selection after a move
-    mouseSelectionAllowed = false;
-    setTimeout(() => {
-      mouseSelectionAllowed = true;
-    }, 250);
+    disableTemporarilyMouseSelection();
     //-------------------------------------------------
     if (!SELECTED_CARD) {
       dx = 0; // eslint-disable-line

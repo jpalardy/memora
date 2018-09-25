@@ -178,7 +178,24 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 var scheduler = require("./scheduler");
 var utils = require("./utils");
 
+function debounce(f, wait) {
+  var timeoutId = null;
+  return function () {
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(function () {
+      return f.apply(undefined, args);
+    }, wait);
+  };
+}
+
 var mouseSelectionAllowed = true;
+var waitAndEnableMouseSelection = debounce(function () {
+  mouseSelectionAllowed = true;
+}, 250);
 
 var elem = React.createElement;
 
@@ -271,9 +288,7 @@ var ACTIONS = function () {
     //-------------------------------------------------
     // disable mouse selection after a move
     mouseSelectionAllowed = false;
-    setTimeout(function () {
-      mouseSelectionAllowed = true;
-    }, 250);
+    waitAndEnableMouseSelection();
     //-------------------------------------------------
     if (!SELECTED_CARD) {
       dx = 0; // eslint-disable-line
