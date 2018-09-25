@@ -196,6 +196,10 @@ var mouseSelectionAllowed = true;
 var waitAndEnableMouseSelection = debounce(function () {
   mouseSelectionAllowed = true;
 }, 250);
+var disableTemporarilyMouseSelection = function disableTemporarilyMouseSelection() {
+  mouseSelectionAllowed = false;
+  waitAndEnableMouseSelection();
+};
 
 var elem = React.createElement;
 
@@ -203,7 +207,8 @@ var Session = void 0;
 
 //-------------------------------------------------
 
-function scrollToSelected() {
+// eslint-disable-next-line prefer-arrow-callback
+var waitAndScrollToSelected = debounce(function scrollToSelected() {
   var selected = document.getElementsByClassName("selected")[0];
   if (!selected) {
     return;
@@ -222,7 +227,7 @@ function scrollToSelected() {
   if (cardBot > scrollBot - paddingBot) {
     window.scrollTo(0, cardBot - window.innerHeight + paddingBot); // eslint-disable-line no-mixed-operators
   }
-}
+}, 100);
 
 //-------------------------------------------------
 
@@ -286,9 +291,7 @@ var ACTIONS = function () {
 
   exports.selectDiff = function (dx, dy, lineCount) {
     //-------------------------------------------------
-    // disable mouse selection after a move
-    mouseSelectionAllowed = false;
-    waitAndEnableMouseSelection();
+    disableTemporarilyMouseSelection();
     //-------------------------------------------------
     if (!SELECTED_CARD) {
       dx = 0; // eslint-disable-line
@@ -324,9 +327,7 @@ var ACTIONS = function () {
       x = utils.clamp(x + dx, 0, lines[y].length - 1);
     }
     exports.selectCard(lines[y][x]);
-    setTimeout(function () {
-      scrollToSelected();
-    }, 100);
+    waitAndScrollToSelected();
   };
 
   exports.selectCard = function (card) {

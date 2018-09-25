@@ -26,7 +26,8 @@ let Session;
 
 //-------------------------------------------------
 
-function scrollToSelected() {
+// eslint-disable-next-line prefer-arrow-callback
+const waitAndScrollToSelected = debounce(function scrollToSelected() {
   const selected = document.getElementsByClassName("selected")[0];
   if (!selected) {
     return;
@@ -45,7 +46,7 @@ function scrollToSelected() {
   if (cardBot > scrollBot - paddingBot) {
     window.scrollTo(0, cardBot - window.innerHeight + paddingBot); // eslint-disable-line no-mixed-operators
   }
-}
+}, 100);
 
 //-------------------------------------------------
 
@@ -137,9 +138,7 @@ const ACTIONS = (() => {
       x = utils.clamp(x + dx, 0, lines[y].length - 1);
     }
     exports.selectCard(lines[y][x]);
-    setTimeout(() => {
-      scrollToSelected();
-    }, 100);
+    waitAndScrollToSelected();
   };
 
   exports.selectCard = card => {
