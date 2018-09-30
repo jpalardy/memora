@@ -495,7 +495,7 @@ var Deck = React.createClass({
     var cards = this.props.deck.cards;
 
     var subtext = utils.pluralize(cards.length, "card");
-    var limit = utils.getLimit(this.state.limit, this.props.deck.cards);
+    var limit = utils.getLimit(this.state.limit, this.props.deck.cards.length);
     if (limit) {
       if (limit < cards.length) {
         subtext = limit + " of " + subtext;
