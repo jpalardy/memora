@@ -473,7 +473,7 @@ var Card = React.createClass({
       onMouseDown: this.handleDown,
       onMouseUp: this.handleUp,
       onMouseEnter: this.select
-    }, elem("span", { className: "text" }, text), elem("span", { className: "preview" }, preview));
+    }, elem("span", { className: "text", dangerouslySetInnerHTML: { __html: text } }), elem("span", { className: "preview" }, preview));
   }
 });
 
