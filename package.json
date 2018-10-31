@@ -8,6 +8,6 @@
     "build": "parcel build --no-source-maps --no-minify -d assets/js -o memora.js src/js/app.js"
   },
   "dependencies": {
-    "parcel-bundler": "1.9.7"
+    "parcel-bundler": "1.10.3"
   }
 }
