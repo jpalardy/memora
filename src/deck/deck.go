@@ -3,7 +3,7 @@ package deck
 import "strings"
 import "time"
 
-import "github.com/jpalardy/par"
+import "par"
 
 //-------------------------------------------------
 

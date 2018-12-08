@@ -9,7 +9,7 @@ import "os"
 import "os/signal"
 import "time"
 
-import "github.com/jpalardy/deck"
+import "deck"
 
 func check(err error) {
 	if err != nil {
