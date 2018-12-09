@@ -5,7 +5,7 @@
   "author": "Jonathan Palardy",
   "license": "MIT",
   "scripts": {
-    "build": "parcel build --no-source-maps --no-minify -d assets/js -o memora.js src/js/app.js"
+    "build": "parcel build --no-source-maps --no-minify -d assets/js -o memora.js js/app.js"
   },
   "dependencies": {
     "parcel-bundler": "1.10.3"
