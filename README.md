@@ -1,6 +1,8 @@
 
 # Memora
 
+![travis-build-status](https://travis-ci.org/jpalardy/memora.svg?branch=master)
+
 Memora is a flashcard app, like [Supermemo](https://www.supermemo.com/),
 [Anki](http://ankisrs.net/), or one of the other software you can use to do
 [spaced repetition](https://en.wikipedia.org/wiki/Spaced_repetition).
@@ -18,9 +20,9 @@ On a mac:
 
 From source:
 
-    > git clone git@github.com:jpalardy/memora.git
-    > cd memora
-    > make install
+    > go get -d -u -v github.com/jpalardy/memora
+    > cd $(go env GOPATH)/src/github.com/jpalardy/memora
+    > go build -o bin/memora
     # the memora binary in the `bin` subdirectory
 
 The memora binary is compiled with the location of the assets (HTML,
