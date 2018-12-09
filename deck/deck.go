@@ -1,9 +1,11 @@
 package deck
 
-import "strings"
-import "time"
+import (
+	"strings"
+	"time"
 
-import "github.com/jpalardy/memora/par"
+	"github.com/jpalardy/memora/par"
+)
 
 //-------------------------------------------------
 

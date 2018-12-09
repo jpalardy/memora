@@ -1,15 +1,17 @@
 package main
 
-import "encoding/json"
-import "io/ioutil"
-import "flag"
-import "fmt"
-import "net/http"
-import "os"
-import "os/signal"
-import "time"
+import (
+	"encoding/json"
+	"flag"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"os/signal"
+	"time"
 
-import "github.com/jpalardy/memora/deck"
+	"github.com/jpalardy/memora/deck"
+)
 
 func check(err error) {
 	if err != nil {

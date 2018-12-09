@@ -1,8 +1,10 @@
 package deck
 
-import "encoding/json"
-import "time"
-import "strconv"
+import (
+	"encoding/json"
+	"strconv"
+	"time"
+)
 
 type clientCard struct {
 	Question string `json:"question"`

@@ -1,9 +1,11 @@
 package par
 
-import "io/ioutil"
-import "strings"
-import "os"
-import "fmt"
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
+)
 
 //-------------------------------------------------
 
