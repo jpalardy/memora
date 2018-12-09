@@ -5,3 +5,7 @@ go:
 
 git:
   depth: 1
+
+script:
+  - make
+  - $GOPATH/bin/memora -h
