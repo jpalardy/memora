@@ -8,4 +8,4 @@ git:
 
 script:
   - make
-  - $GOPATH/bin/memora -h
+  - $GOPATH/bin/memora -version
