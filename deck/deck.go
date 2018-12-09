@@ -3,7 +3,7 @@ package deck
 import "strings"
 import "time"
 
-import "par"
+import "github.com/jpalardy/memora/par"
 
 //-------------------------------------------------
 
