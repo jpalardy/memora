@@ -19,10 +19,12 @@ func check(err error) {
 	}
 }
 
+// VERSION var
 var VERSION = "???"    // set externally by "go build"
+// ASSETS_DIR var
 var ASSETS_DIR = "???" // set externally by "go build"
 
-func serve(filenames []string, port string, assets_dir string) {
+func serve(filenames []string, port string, assetsDir string) {
 	// GET /decks.json
 	http.HandleFunc("/decks.json", func(rw http.ResponseWriter, r *http.Request) {
 		fmt.Println("-->", r.URL.Path)
@@ -49,8 +51,8 @@ func serve(filenames []string, port string, assets_dir string) {
 		rw.WriteHeader(200)
 	})
 
-	// all other requests, try to serve from assets_dir
-	http.Handle("/", http.FileServer(http.Dir(assets_dir)))
+	// all other requests, try to serve from assetsDir
+	http.Handle("/", http.FileServer(http.Dir(assetsDir)))
 
 	address := "127.0.0.1:" + port
 	fmt.Println("listening on http://" + address)
@@ -60,7 +62,7 @@ func serve(filenames []string, port string, assets_dir string) {
 
 func main() {
 	port := flag.String("port", "4567", "port to listen on")
-	assets_dir := flag.String("assets", ASSETS_DIR, "directory where the assets (html, css, javascript) are located")
+	assetsDir := flag.String("assets", ASSETS_DIR, "directory where the assets (html, css, javascript) are located")
 	version := flag.Bool("version", false, "print version information")
 	flag.Parse()
 	filenames := flag.Args()
@@ -78,5 +80,5 @@ func main() {
 		os.Exit(0)
 	}()
 
-	serve(filenames, *port, *assets_dir)
+	serve(filenames, *port, *assetsDir)
 }

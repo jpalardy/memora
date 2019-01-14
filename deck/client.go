@@ -12,6 +12,7 @@ type clientCard struct {
 	Last     string `json:"last"`
 }
 
+// ClientDeck struct
 type ClientDeck struct {
 	Filename    string       `json:"filename"`
 	ClientCards []clientCard `json:"cards"`
@@ -31,6 +32,7 @@ type deckUpdate struct {
 
 //-------------------------------------------------
 
+// ToClient func
 func (deck *Deck) ToClient() *ClientDeck {
 	result := ClientDeck{Filename: deck.Filename}
 	for _, card := range deck.Cards {
@@ -47,6 +49,7 @@ func (deck *Deck) ToClient() *ClientDeck {
 	return &result
 }
 
+// UpdateFromClient func
 func UpdateFromClient(bytes []byte) error {
 	var updates []deckUpdate
 	err := json.Unmarshal(bytes, &updates)

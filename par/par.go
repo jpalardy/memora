@@ -18,6 +18,7 @@ func file2lines(filename string) ([]string, error) {
 	return strings.Split(content, "\n"), nil
 }
 
+// Read func
 func Read(filename string) ([][]string, error) {
 	lines, err := file2lines(filename)
 	if err != nil {
@@ -42,6 +43,7 @@ func Read(filename string) ([][]string, error) {
 	return result, nil
 }
 
+// Write func
 func Write(filename string, paragraphs [][]string) error {
 	f, err := os.Create(filename)
 	if err != nil {

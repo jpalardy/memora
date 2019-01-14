@@ -21,6 +21,7 @@ type card struct {
 	History  []answer `json:"history"`
 }
 
+// Deck struct
 type Deck struct {
 	Filename string `json:"filename"`
 	Cards    []card `json:"cards"`
@@ -69,6 +70,7 @@ func newCard(args ...string) *card {
 
 //-------------------------------------------------
 
+// Read func
 func Read(filename string) (*Deck, error) {
 	paragraphs, err := par.Read(filename)
 	if err != nil {

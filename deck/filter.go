@@ -1,5 +1,6 @@
 package deck
 
+// Filter func
 func (deck *Deck) Filter(cutoff string) *Deck {
 	result := *deck
 	result.Cards = nil
