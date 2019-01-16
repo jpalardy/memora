@@ -1,7 +1,6 @@
 package deck
 
 import (
-	"encoding/json"
 	"strconv"
 	"time"
 )
@@ -25,7 +24,8 @@ type cardUpdate struct {
 	Next string `json:"next"`
 }
 
-type deckUpdate struct {
+// Update struct
+type Update struct {
 	Filename string                `json:"filename"`
 	Updates  map[string]cardUpdate `json:"updates"`
 }
@@ -33,7 +33,7 @@ type deckUpdate struct {
 //-------------------------------------------------
 
 // ToClient func
-func (deck *Deck) ToClient() *ClientDeck {
+func (deck Deck) ToClient() ClientDeck {
 	result := ClientDeck{Filename: deck.Filename}
 	for _, card := range deck.Cards {
 		last := card.DueOn
@@ -46,16 +46,11 @@ func (deck *Deck) ToClient() *ClientDeck {
 			Last:     last,
 		})
 	}
-	return &result
+	return result
 }
 
 // UpdateFromClient func
-func UpdateFromClient(bytes []byte) error {
-	var updates []deckUpdate
-	err := json.Unmarshal(bytes, &updates)
-	if err != nil {
-		return err
-	}
+func UpdateFromClient(updates []Update) error {
 	for _, update := range updates {
 		deck, err := Read(update.Filename)
 		if err != nil {
@@ -72,7 +67,7 @@ func UpdateFromClient(bytes []byte) error {
 func (deck *Deck) update(updates map[string]cardUpdate) error {
 	today := time.Now().Format("2006-01-02")
 	for i := range deck.Cards {
-		card := &deck.Cards[i]
+		card := deck.Cards[i]
 		if cu, ok := updates[card.Question]; ok {
 			card.DueOn = cu.Next
 			card.History = append(card.History, answer{Date: today, Mark: strconv.Itoa(cu.Mark)})

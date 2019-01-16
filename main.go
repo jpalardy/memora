@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,42 +12,48 @@ import (
 	"github.com/jpalardy/memora/deck"
 )
 
-func check(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
 // VERSION var
-var VERSION = "???"    // set externally by "go build"
+var VERSION = "???" // set externally by "go build"
 // ASSETS_DIR var
 var ASSETS_DIR = "???" // set externally by "go build"
 
+func replyError(w http.ResponseWriter, err error) {
+	fmt.Fprintln(os.Stderr, "*", err)
+	http.Error(w, err.Error(), 500)
+}
+
 func serve(filenames []string, port string, assetsDir string) {
 	// GET /decks.json
-	http.HandleFunc("/decks.json", func(rw http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/decks.json", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("-->", r.URL.Path)
 		today := time.Now().Format("2006-01-02")
 		var decks []deck.ClientDeck
 		for _, filename := range filenames {
 			d, err := deck.Read(filename)
-			check(err)
-			decks = append(decks, *d.Filter(today).ToClient())
+			if err != nil {
+				replyError(w, err)
+				return
+			}
+			decks = append(decks, d.Filter(today).ToClient())
 		}
-		js, err := json.Marshal(decks)
-		check(err)
-		rw.Header().Set("Content-Type", "application/json")
-		rw.Write(js)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(decks)
 	})
 
 	// POST /decks
-	http.HandleFunc("/decks", func(rw http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/decks", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("-->", r.URL.Path)
-		body, err := ioutil.ReadAll(r.Body)
-		check(err)
-		err = deck.UpdateFromClient(body)
-		check(err)
-		rw.WriteHeader(200)
+		var updates []deck.Update
+		decoder := json.NewDecoder(r.Body)
+		if err := decoder.Decode(&updates); err != nil {
+			replyError(w, err)
+			return
+		}
+		if err := deck.UpdateFromClient(updates); err != nil {
+			replyError(w, err)
+			return
+		}
+		w.WriteHeader(200)
 	})
 
 	// all other requests, try to serve from assetsDir
@@ -57,7 +62,10 @@ func serve(filenames []string, port string, assetsDir string) {
 	address := "127.0.0.1:" + port
 	fmt.Println("listening on http://" + address)
 	err := http.ListenAndServe(address, nil)
-	check(err)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "*", err)
+		os.Exit(1)
+	}
 }
 
 func main() {

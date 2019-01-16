@@ -1,6 +1,7 @@
 package deck
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -14,12 +15,34 @@ type answer struct {
 	Mark string `json:"mark"`
 }
 
-type card struct {
-	Question string   `json:"question"`
-	Answer   string   `json:"answer"`
-	DueOn    string   `json:"dueOn"`
-	History  []answer `json:"history"`
+type history []answer
+
+func (h history) String() string {
+	var answers []string
+	for _, a := range h {
+		answers = append(answers, fmt.Sprintf("%s %s", a.Date, a.Mark))
+	}
+	return strings.Join(answers, ", ")
 }
+
+//-------------------------------------------------
+
+type card struct {
+	Question string  `json:"question"`
+	Answer   string  `json:"answer"`
+	DueOn    string  `json:"dueOn"`
+	History  history `json:"history"`
+}
+
+func (c card) Strings() []string {
+	result := []string{c.Question, c.Answer, c.DueOn}
+	if len(c.History) > 0 {
+		result = append(result, c.History.String())
+	}
+	return result
+}
+
+//-------------------------------------------------
 
 // Deck struct
 type Deck struct {
@@ -29,26 +52,7 @@ type Deck struct {
 
 //-------------------------------------------------
 
-func toString(h []answer) string {
-	var answers []string
-	for _, a := range h {
-		aStr := a.Date + " " + a.Mark
-		answers = append(answers, aStr)
-	}
-	return strings.Join(answers, ", ")
-}
-
-func (c card) toStringSlice() []string {
-	result := []string{c.Question, c.Answer, c.DueOn}
-	if len(c.History) > 0 {
-		result = append(result, toString(c.History))
-	}
-	return result
-}
-
-//-------------------------------------------------
-
-func newCard(args ...string) *card {
+func cardFrom(args ...string) card {
 	result := card{Question: args[0], Answer: args[1]}
 	if len(args) >= 3 {
 		result.DueOn = args[2]
@@ -65,28 +69,28 @@ func newCard(args ...string) *card {
 		}
 		result.History = history
 	}
-	return &result
+	return result
 }
 
 //-------------------------------------------------
 
 // Read func
-func Read(filename string) (*Deck, error) {
+func Read(filename string) (Deck, error) {
 	paragraphs, err := par.Read(filename)
 	if err != nil {
-		return nil, err
+		return Deck{}, err
 	}
 	deck := Deck{Filename: filename}
 	for _, par := range paragraphs {
-		deck.Cards = append(deck.Cards, *newCard(par...))
+		deck.Cards = append(deck.Cards, cardFrom(par...))
 	}
-	return &deck, nil
+	return deck, nil
 }
 
-func (deck *Deck) Write() error {
+func (deck Deck) Write() error {
 	var paragraphs [][]string
 	for _, card := range deck.Cards {
-		paragraphs = append(paragraphs, card.toStringSlice())
+		paragraphs = append(paragraphs, card.Strings())
 	}
 	err := par.Write(deck.Filename, paragraphs)
 	return err
