@@ -67,7 +67,7 @@ func UpdateFromClient(updates []Update) error {
 func (deck *Deck) update(updates map[string]cardUpdate) error {
 	today := time.Now().Format("2006-01-02")
 	for i := range deck.Cards {
-		card := deck.Cards[i]
+		card := &deck.Cards[i]
 		if cu, ok := updates[card.Question]; ok {
 			card.DueOn = cu.Next
 			card.History = append(card.History, answer{Date: today, Mark: strconv.Itoa(cu.Mark)})
