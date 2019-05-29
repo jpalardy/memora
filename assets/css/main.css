@@ -10,14 +10,13 @@ body {
 }
 
 #header {
-  background: #333;
+  background: #314860;
   height: 40px;
   line-height: 36px;
-  font-variant: small-caps;
+  border-bottom: 1px solid black;
 }
 
     #header h1 {
-      font-family: Georgia, Times New Roman, Times, serif;
       font-size: 250%;
       color: white;
       margin: 0;
@@ -25,10 +24,6 @@ body {
 
 .container {
   margin: 0 10px 0 30px;
-}
-
-.deck hgroup {
-  cursor: pointer;
 }
 
 .deck h2 {
