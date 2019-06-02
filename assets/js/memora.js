@@ -128,19 +128,18 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 /* global dayjs */
 var scheduler = {
+  daysSince: function daysSince(time) {
+    return dayjs().diff(dayjs(time), "days");
+  },
   rangeRand: function rangeRand(min, max) {
     return min + Math.floor((max - min + 1) * Math.random()); // eslint-disable-line
-  },
-  doubler: function doubler(lastTime) {
-    var daysSinceLast = dayjs().diff(dayjs(lastTime), "days");
-    return daysSinceLast * 2;
   },
   daysRange: function daysRange(days) {
     var variance = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Math.ceil(days / 6);
     return [days - variance, days + variance];
   },
   daysPreview: function daysPreview(lastTime, variance) {
-    var days = this.doubler(lastTime);
+    var days = this.daysSince(lastTime) * 2;
     return this.daysRange(days, variance);
   },
   daysUntilNext: function daysUntilNext(success, lastTime, variance) {
@@ -341,6 +340,11 @@ exports.handle = function (app, backend) {
       backend.save(app.decks).then(backend.load).then(function (decks) {
         app.decks = decks;
       });
+    } // r
+
+
+    if (code === 82 && !(e.ctrlKey || e.metaKey)) {
+      app.redoes = !app.redoes;
     } //-------------------------------------------------
 
 
@@ -447,18 +451,12 @@ var browser = require("./browser");
 
 var app = new Vue({
   el: "#decks",
-  template: "\n    <div id=\"decks\" class=\"container\">\n      <deck :deck=\"deck\" :key=\"deck.key\" v-for=\"deck in nonEmptyDecks\">\n      </deck>\n    </div>\n  ",
+  template: "\n    <div id=\"decks\" class=\"container\">\n      <deck :deck=\"deck\" :key=\"deck.key\" v-for=\"deck in decks\">\n      </deck>\n    </div>\n  ",
   data: {
     decks: [],
     selectedCard: null,
-    lastScrollAt: Date.now()
-  },
-  computed: {
-    nonEmptyDecks: function nonEmptyDecks() {
-      return this.decks.filter(function (deck) {
-        return deck.cards.length;
-      });
-    }
+    lastScrollAt: Date.now(),
+    redoes: false
   },
   methods: {
     selectCard: function selectCard(card, _ref) {
@@ -518,18 +516,26 @@ var app = new Vue({
 });
 Vue.component("deck", {
   props: ["deck"],
-  template: "\n    <div class=\"deck\">\n      <hgroup>\n        <h2>{{ deck.filename }}</h2>\n        <h3 class=\"subtext\">{{ isLimited ? limit + \" of \" : \"\"}}{{ deck.cards | pluralize('card') }}</h3>\n      </hgroup>\n      <div class=\"cards\">\n        <card :card=\"card\" :key=\"card.key\" v-for=\"card in limitedCards\"></card>\n      </div>\n      <div v-if=\"isLimited\">\n        <button @click=\"limit += 12\">...</button>\n      </div>\n    </div>\n  ",
+  template: "\n    <div class=\"deck\">\n      <hgroup>\n        <h2>{{ deck.filename }}</h2>\n        <h3 class=\"subtext\">{{ isLimited ? limit + \" of \" : \"\"}}{{ filteredCards | pluralize('card') }}</h3>\n      </hgroup>\n      <div class=\"cards\">\n        <card :card=\"card\" :key=\"card.key\" v-for=\"card in limitedCards\"></card>\n      </div>\n      <div v-if=\"isLimited\">\n        <button @click=\"limit += 12\"><span class=\"discoverable\">{{ remainingCards | pluralize('card') }} left</span>...</button>\n      </div>\n    </div>\n  ",
   data: function data() {
     return {
       limit: 12
     };
   },
   computed: {
+    filteredCards: function filteredCards() {
+      return this.deck.cards.filter(function (card) {
+        return app.redoes || !card.last || scheduler.daysSince(card.last) > 0;
+      });
+    },
     isLimited: function isLimited() {
-      return this.limit < this.deck.cards.length;
+      return this.filteredCards.length > this.limit;
     },
     limitedCards: function limitedCards() {
-      return this.deck.cards.slice(0, this.limit);
+      return this.filteredCards.slice(0, this.limit);
+    },
+    remainingCards: function remainingCards() {
+      return this.filteredCards.slice(this.limit);
     }
   }
 });
@@ -625,7 +631,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54332" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60076" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -7,6 +7,7 @@ body {
   font-family: Verdana, Arial, Helvetica, sans-serif;
   font-size: 80%;
   color: #555;
+  margin-bottom: 50px;
 }
 
 #header {
@@ -88,4 +89,16 @@ body {
     .card.failed {
       background: #FFCCCC;
     }
+
+
+/*-------------------------------------------------*/
+
+.deck button .discoverable {
+  display: none;
+}
+
+.deck button:hover .discoverable {
+  display: inline;
+}
+
 

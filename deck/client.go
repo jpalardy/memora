@@ -8,7 +8,7 @@ import (
 type clientCard struct {
 	Question string `json:"question"`
 	Answer   string `json:"answer"`
-	Last     string `json:"last"`
+	Last     string `json:"last,omitempty"`
 }
 
 // ClientDeck struct
@@ -36,7 +36,7 @@ type Update struct {
 func (deck Deck) ToClient() ClientDeck {
 	result := ClientDeck{Filename: deck.Filename}
 	for _, card := range deck.Cards {
-		last := card.DueOn
+		var last string
 		if len(card.History) > 0 {
 			last = card.History[len(card.History)-1].Date
 		}
