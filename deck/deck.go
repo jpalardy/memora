@@ -18,7 +18,7 @@ type answer struct {
 type history []answer
 
 func (h history) String() string {
-	var answers []string
+	answers := make([]string, 0, len(h))
 	for _, a := range h {
 		answers = append(answers, fmt.Sprintf("%s %s", a.Date, a.Mark))
 	}
@@ -62,7 +62,7 @@ func cardFrom(args ...string) card {
 	}
 	if len(args) >= 4 {
 		parts := strings.Split(args[3], ", ")
-		var history []answer
+		history := make([]answer, 0, len(parts))
 		for _, part := range parts {
 			subparts := strings.Split(part, " ")
 			history = append(history, answer{subparts[0], subparts[1]})
@@ -88,7 +88,7 @@ func Read(filename string) (Deck, error) {
 }
 
 func (deck Deck) Write() error {
-	var paragraphs [][]string
+	paragraphs := make([][]string, 0, len(deck.Cards))
 	for _, card := range deck.Cards {
 		paragraphs = append(paragraphs, card.Strings())
 	}

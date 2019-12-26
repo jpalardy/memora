@@ -35,6 +35,7 @@ type Update struct {
 // ToClient func
 func (deck Deck) ToClient() ClientDeck {
 	result := ClientDeck{Filename: deck.Filename}
+	result.ClientCards = make([]clientCard, 0, len(deck.Cards))
 	for _, card := range deck.Cards {
 		var last string
 		if len(card.History) > 0 {

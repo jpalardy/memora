@@ -27,7 +27,7 @@ func serve(filenames []string, port string, assetsDir string) {
 	http.HandleFunc("/decks.json", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("-->", r.URL.Path)
 		today := time.Now().Format("2006-01-02")
-		var decks []deck.ClientDeck
+		decks := make([]deck.ClientDeck, 0, len(filenames))
 		for _, filename := range filenames {
 			d, err := deck.Read(filename)
 			if err != nil {
