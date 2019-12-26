@@ -11,7 +11,6 @@ type clientCard struct {
 	Last     string `json:"last,omitempty"`
 }
 
-// ClientDeck struct
 type ClientDeck struct {
 	Filename    string       `json:"filename"`
 	ClientCards []clientCard `json:"cards"`
@@ -24,7 +23,6 @@ type cardUpdate struct {
 	Next string `json:"next"`
 }
 
-// Update struct
 type Update struct {
 	Filename string                `json:"filename"`
 	Updates  map[string]cardUpdate `json:"updates"`
@@ -32,25 +30,22 @@ type Update struct {
 
 //-------------------------------------------------
 
-// ToClient func
 func (deck Deck) ToClient() ClientDeck {
 	result := ClientDeck{Filename: deck.Filename}
 	result.ClientCards = make([]clientCard, 0, len(deck.Cards))
 	for _, card := range deck.Cards {
-		var last string
-		if len(card.History) > 0 {
-			last = card.History[len(card.History)-1].Date
-		}
-		result.ClientCards = append(result.ClientCards, clientCard{
+		clientCard := clientCard{
 			Question: card.Question,
 			Answer:   card.Answer,
-			Last:     last,
-		})
+		}
+		if len(card.History) > 0 {
+			clientCard.Last = card.History[len(card.History)-1].Date
+		}
+		result.ClientCards = append(result.ClientCards, clientCard)
 	}
 	return result
 }
 
-// UpdateFromClient func
 func UpdateFromClient(updates []Update) error {
 	for _, update := range updates {
 		deck, err := Read(update.Filename)

@@ -12,9 +12,7 @@ import (
 	"github.com/jpalardy/memora/deck"
 )
 
-// VERSION var
-var VERSION = "???" // set externally by "go build"
-// ASSETS_DIR var
+var VERSION = "???"    // set externally by "go build"
 var ASSETS_DIR = "???" // set externally by "go build"
 
 func replyError(w http.ResponseWriter, err error) {

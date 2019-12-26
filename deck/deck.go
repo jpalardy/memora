@@ -44,7 +44,6 @@ func (c card) Strings() []string {
 
 //-------------------------------------------------
 
-// Deck struct
 type Deck struct {
 	Filename string `json:"filename"`
 	Cards    []card `json:"cards"`
@@ -65,7 +64,7 @@ func cardFrom(args ...string) card {
 		history := make([]answer, 0, len(parts))
 		for _, part := range parts {
 			subparts := strings.Split(part, " ")
-			history = append(history, answer{subparts[0], subparts[1]})
+			history = append(history, answer{Date: subparts[0], Mark: subparts[1]})
 		}
 		result.History = history
 	}
@@ -74,13 +73,13 @@ func cardFrom(args ...string) card {
 
 //-------------------------------------------------
 
-// Read func
 func Read(filename string) (Deck, error) {
 	paragraphs, err := par.Read(filename)
 	if err != nil {
 		return Deck{}, err
 	}
 	deck := Deck{Filename: filename}
+	deck.Cards = make([]card, 0, len(paragraphs))
 	for _, par := range paragraphs {
 		deck.Cards = append(deck.Cards, cardFrom(par...))
 	}
@@ -92,6 +91,5 @@ func (deck Deck) Write() error {
 	for _, card := range deck.Cards {
 		paragraphs = append(paragraphs, card.Strings())
 	}
-	err := par.Write(deck.Filename, paragraphs)
-	return err
+	return par.Write(deck.Filename, paragraphs)
 }
