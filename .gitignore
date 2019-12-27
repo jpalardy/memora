@@ -1,3 +1,4 @@
 pkg/
 bin/
 node_modules/
+pkged.go

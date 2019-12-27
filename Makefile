@@ -2,8 +2,12 @@
 VERSION = $(shell git describe --tags)
 
 .PHONY: build
-build:
-	go build -ldflags "-X main.ASSETS_DIR=$$PWD/assets -X main.VERSION=$(VERSION)-devel" -o bin/memora
+build: pkged.go
+	go build -ldflags "-X main.VERSION=$(VERSION)-devel" -o bin/memora
+
+pkged.go:
+	pkger
+	goimports -w pkged.go
 
 .PHONY: lint
 lint:
@@ -11,5 +15,5 @@ lint:
 
 .PHONY: clean
 clean:
-	rm -rf bin
+	rm -rf bin/ pkged.go
 
