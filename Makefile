@@ -3,7 +3,7 @@ VERSION = $(shell git describe --tags)
 
 .PHONY: build
 build: pkged.go
-	go build -ldflags "-X main.VERSION=$(VERSION)-devel" -o bin/memora
+	go build -ldflags "-X github.com/jpalardy/memora/cmd.VERSION=$(VERSION)-devel" -o bin/memora
 
 pkged.go:
 	pkger
