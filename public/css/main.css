@@ -24,7 +24,7 @@ body {
     }
 
 .container {
-  margin: 0 10px 0 30px;
+  margin: 0 30px;
 }
 
 .deck h2 {
@@ -40,8 +40,12 @@ body {
 }
 
 .cards {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  /* margins: 60px (30px left, 30px right) */
+  /* space between 4 cols: 30px (3 * 10px) */
+  grid-auto-rows: calc((100vw - 60px - 30px) / 4 / 1.618);
+  grid-gap: 10px;
 }
 
 .card {
@@ -50,20 +54,17 @@ body {
   justify-content: space-around;
   border-radius: 10px;
   box-shadow: 0 0 5px #bbbbbb;
-  margin: 0 10px 10px 0;
   background: white;
   transition: background 200ms ease-in-out;
   position: relative;
-  width: 300px;
-  height: 185px;
   font-size: 16px;
   cursor: pointer;
   text-align: center;
 }
 
-    .card .text {
-      margin: 30px;
-    }
+     .card .text {
+       margin: 10px;
+     }
 
     .card .preview {
       position: absolute;
@@ -101,4 +102,9 @@ body {
   display: inline;
 }
 
+/*-------------------------------------------------*/
+
+.mouse-off {
+  pointer-events: none;
+}
 
