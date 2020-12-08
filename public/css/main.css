@@ -63,8 +63,13 @@ body {
 }
 
      .card .text {
-       margin: 10px;
+       margin: 20px;
      }
+
+       .card .text ul {
+         padding-left: 20px;
+         text-align: left;
+       }
 
     .card .preview {
       position: absolute;

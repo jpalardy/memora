@@ -471,6 +471,10 @@ var app = new Vue({
     selectCard: function selectCard(card, _ref) {
       var source = _ref.source;
 
+      if (this.selectedCard === card) {
+        return;
+      }
+
       if (this.selectedCard) {
         this.selectedCard.flipped = false;
         this.selectedCard.selected = false;
@@ -579,9 +583,6 @@ Vue.component("card", {
       });
     },
     flip: function flip(flipped) {
-      app.selectCard(this.card, {
-        source: "mouse"
-      });
       this.card.flipped = flipped;
     }
   }
