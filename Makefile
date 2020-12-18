@@ -5,7 +5,7 @@ VERSION = $(shell git describe --tags)
 build: pkged.go
 	go build -ldflags "-X github.com/jpalardy/memora/cmd.VERSION=$(VERSION)-devel" -o bin/memora
 
-pkged.go:
+pkged.go: $(shell find public -type f)
 	pkger
 	goimports -w pkged.go
 
