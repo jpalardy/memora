@@ -52,13 +52,20 @@ type Deck struct {
 //-------------------------------------------------
 
 func cardFrom(args ...string) card {
-	result := card{Question: args[0], Answer: args[1]}
+	result := card{
+		Question: args[0],
+		Answer:   args[1],
+		DueOn:    "",
+		History:  nil,
+	}
+	// override DueOn
 	if len(args) >= 3 {
 		result.DueOn = args[2]
 	} else {
 		today := time.Now().Format("2006-01-02")
 		result.DueOn = today
 	}
+	// override History
 	if len(args) >= 4 {
 		parts := strings.Split(args[3], ", ")
 		history := make([]answer, 0, len(parts))
@@ -78,8 +85,10 @@ func Read(filename string) (Deck, error) {
 	if err != nil {
 		return Deck{}, err
 	}
-	deck := Deck{Filename: filename}
-	deck.Cards = make([]card, 0, len(paragraphs))
+	deck := Deck{
+		Filename: filename,
+		Cards:    make([]card, 0, len(paragraphs)),
+	}
 	for _, par := range paragraphs {
 		deck.Cards = append(deck.Cards, cardFrom(par...))
 	}

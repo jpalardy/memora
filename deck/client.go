@@ -31,13 +31,17 @@ type Update struct {
 //-------------------------------------------------
 
 func (deck Deck) ToClient() ClientDeck {
-	result := ClientDeck{Filename: deck.Filename}
-	result.ClientCards = make([]clientCard, 0, len(deck.Cards))
+	result := ClientDeck{
+		Filename:    deck.Filename,
+		ClientCards: make([]clientCard, 0, len(deck.Cards)),
+	}
 	for _, card := range deck.Cards {
 		clientCard := clientCard{
 			Question: card.Question,
 			Answer:   card.Answer,
+			Last:     "",
 		}
+		// override Last
 		if len(card.History) > 0 {
 			clientCard.Last = card.History[len(card.History)-1].Date
 		}
