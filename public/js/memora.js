@@ -117,7 +117,7 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"TuEg":[function(require,module,exports) {
+})({"scheduler.js":[function(require,module,exports) {
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
@@ -151,7 +151,7 @@ var scheduler = {
   }
 };
 module.exports = scheduler;
-},{}],"bRH5":[function(require,module,exports) {
+},{}],"backend.js":[function(require,module,exports) {
 /* global fetch, dayjs, Headers */
 var scheduler = require("./scheduler");
 
@@ -162,6 +162,8 @@ exports.load = function () {
     decks.forEach(function (deck, i) {
       deck.key = "deck-".concat(i);
       deck.cards = deck.cards || []; // backend returns null... FIXME
+
+      /* eslint-disable-next-line no-shadow */
 
       deck.cards.forEach(function (card, i) {
         card.key = "card-".concat(i);
@@ -213,7 +215,7 @@ exports.save = function (decks) {
     body: JSON.stringify(updatedDecks)
   });
 };
-},{"./scheduler":"TuEg"}],"FOZT":[function(require,module,exports) {
+},{"./scheduler":"scheduler.js"}],"utils.js":[function(require,module,exports) {
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
@@ -272,8 +274,10 @@ var utils = {
     }
 
     if (!selectedCard) {
+      /* eslint-disable no-param-reassign */
       dx = 0;
       dy = 0;
+      /* eslint-enable no-param-reassign */
     }
 
     var groups = utils.groupBy(cards, function (card) {
@@ -311,48 +315,43 @@ var utils = {
   }
 };
 module.exports = utils;
-},{}],"VgNd":[function(require,module,exports) {
+},{}],"keyboard.js":[function(require,module,exports) {
 /* global window, document */
 var utils = require("./utils");
 
 exports.handle = function (app, backend) {
   window.addEventListener("keydown", function (e) {
-    var code = e.keyCode; // space
-
-    if (code === 32) {
+    if (e.code === "Space") {
       e.preventDefault();
       app.flipCard(true);
-    } // y
+    }
 
-
-    if (code === 89) {
+    if (e.code === "KeyY") {
       app.markCard(true);
-    } // n
+    }
 
-
-    if (code === 78) {
+    if (e.code === "KeyN") {
       app.markCard(false);
     } // cmd-s or ctrl-s
 
 
-    if (code === 83 && (e.ctrlKey || e.metaKey)) {
+    if (e.code === "KeyS" && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       backend.save(app.decks).then(backend.load).then(function (decks) {
         app.decks = decks;
       });
-    } // r
+    }
 
-
-    if (code === 82 && !(e.ctrlKey || e.metaKey)) {
+    if (e.code === "KeyR" && !(e.ctrlKey || e.metaKey)) {
       app.redoes = !app.redoes;
     } //-------------------------------------------------
 
 
-    var selectCard = function selectCard(dx, dy) {
+    var selectCard = function selectCard(selector) {
       e.preventDefault();
       var visibleCards = document.querySelectorAll(".card");
       var selectedCard = document.querySelector(".selected");
-      var card = utils.findRelativeTo(visibleCards, selectedCard, dx, dy);
+      var card = selector(visibleCards, selectedCard);
 
       if (card) {
         // eslint-disable-next-line no-underscore-dangle
@@ -360,38 +359,52 @@ exports.handle = function (app, backend) {
           source: "keyboard"
         });
       }
-    }; // left
+    };
 
+    if (e.code === "ArrowLeft") {
+      selectCard(function (visibleCards, selectedCard) {
+        return utils.findRelativeTo(visibleCards, selectedCard, -1, 0);
+      });
+    }
 
-    if (code === 37) {
-      selectCard(-1, 0);
-    } // right
+    if (e.code === "ArrowRight") {
+      selectCard(function (visibleCards, selectedCard) {
+        return utils.findRelativeTo(visibleCards, selectedCard, 1, 0);
+      });
+    }
 
+    if (e.code === "ArrowUp") {
+      selectCard(function (visibleCards, selectedCard) {
+        return utils.findRelativeTo(visibleCards, selectedCard, 0, -1);
+      });
+    }
 
-    if (code === 39) {
-      selectCard(1, 0);
-    } // up
+    if (e.code === "ArrowDown") {
+      selectCard(function (visibleCards, selectedCard) {
+        return utils.findRelativeTo(visibleCards, selectedCard, 0, 1);
+      });
+    }
 
+    if (e.code === "Home") {
+      selectCard(function (visibleCards) {
+        return visibleCards[0];
+      });
+    }
 
-    if (code === 38) {
-      selectCard(0, -1);
-    } // down
-
-
-    if (code === 40) {
-      selectCard(0, 1);
+    if (e.code === "End") {
+      selectCard(function (visibleCards) {
+        return visibleCards[visibleCards.length - 1];
+      });
     }
   }, false);
   window.addEventListener("keyup", function (e) {
-    var code = e.keyCode; // space
-
-    if (code === 32) {
+    if (e.code === "Space") {
       e.preventDefault();
       app.flipCard(false);
     }
   }, false);
 };
-},{"./utils":"FOZT"}],"hpaf":[function(require,module,exports) {
+},{"./utils":"utils.js"}],"browser.js":[function(require,module,exports) {
 /* global window, document */
 function debounce(f, wait) {
   var timeoutId = null;
@@ -431,7 +444,7 @@ exports.waitAndScrollToSelected = debounce(function () {
     window.scrollTo(0, cardBot - window.innerHeight + paddingBot); // eslint-disable-line no-mixed-operators
   }
 }, 100);
-},{}],"A2T1":[function(require,module,exports) {
+},{}],"app.js":[function(require,module,exports) {
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
@@ -592,6 +605,7 @@ Vue.filter("pluralize", function (count, singular) {
   var plural = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "".concat(singular, "s");
 
   if ("length" in count) {
+    /* eslint-disable-next-line no-param-reassign */
     count = count.length;
   }
 
@@ -608,4 +622,208 @@ Vue.filter("pluralize", function (count, singular) {
 
 keyboard.handle(app, backend);
 window.app = app;
-},{"./scheduler":"TuEg","./backend":"bRH5","./keyboard":"VgNd","./browser":"hpaf"}]},{},["A2T1"], null)
+},{"./scheduler":"scheduler.js","./backend":"backend.js","./keyboard":"keyboard.js","./browser":"browser.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+var global = arguments[3];
+var OVERLAY_ID = '__parcel__error__overlay__';
+var OldModule = module.bundle.Module;
+
+function Module(moduleName) {
+  OldModule.call(this, moduleName);
+  this.hot = {
+    data: module.bundle.hotData,
+    _acceptCallbacks: [],
+    _disposeCallbacks: [],
+    accept: function (fn) {
+      this._acceptCallbacks.push(fn || function () {});
+    },
+    dispose: function (fn) {
+      this._disposeCallbacks.push(fn);
+    }
+  };
+  module.bundle.hotData = null;
+}
+
+module.bundle.Module = Module;
+var checkedAssets, assetsToAccept;
+var parent = module.bundle.parent;
+
+if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
+  var hostname = "" || location.hostname;
+  var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59567" + '/');
+
+  ws.onmessage = function (event) {
+    checkedAssets = {};
+    assetsToAccept = [];
+    var data = JSON.parse(event.data);
+
+    if (data.type === 'update') {
+      var handled = false;
+      data.assets.forEach(function (asset) {
+        if (!asset.isNew) {
+          var didAccept = hmrAcceptCheck(global.parcelRequire, asset.id);
+
+          if (didAccept) {
+            handled = true;
+          }
+        }
+      }); // Enable HMR for CSS by default.
+
+      handled = handled || data.assets.every(function (asset) {
+        return asset.type === 'css' && asset.generated.js;
+      });
+
+      if (handled) {
+        console.clear();
+        data.assets.forEach(function (asset) {
+          hmrApply(global.parcelRequire, asset);
+        });
+        assetsToAccept.forEach(function (v) {
+          hmrAcceptRun(v[0], v[1]);
+        });
+      } else if (location.reload) {
+        // `location` global exists in a web worker context but lacks `.reload()` function.
+        location.reload();
+      }
+    }
+
+    if (data.type === 'reload') {
+      ws.close();
+
+      ws.onclose = function () {
+        location.reload();
+      };
+    }
+
+    if (data.type === 'error-resolved') {
+      console.log('[parcel] ✨ Error resolved');
+      removeErrorOverlay();
+    }
+
+    if (data.type === 'error') {
+      console.error('[parcel] 🚨  ' + data.error.message + '\n' + data.error.stack);
+      removeErrorOverlay();
+      var overlay = createErrorOverlay(data);
+      document.body.appendChild(overlay);
+    }
+  };
+}
+
+function removeErrorOverlay() {
+  var overlay = document.getElementById(OVERLAY_ID);
+
+  if (overlay) {
+    overlay.remove();
+  }
+}
+
+function createErrorOverlay(data) {
+  var overlay = document.createElement('div');
+  overlay.id = OVERLAY_ID; // html encode message and stack trace
+
+  var message = document.createElement('div');
+  var stackTrace = document.createElement('pre');
+  message.innerText = data.error.message;
+  stackTrace.innerText = data.error.stack;
+  overlay.innerHTML = '<div style="background: black; font-size: 16px; color: white; position: fixed; height: 100%; width: 100%; top: 0px; left: 0px; padding: 30px; opacity: 0.85; font-family: Menlo, Consolas, monospace; z-index: 9999;">' + '<span style="background: red; padding: 2px 4px; border-radius: 2px;">ERROR</span>' + '<span style="top: 2px; margin-left: 5px; position: relative;">🚨</span>' + '<div style="font-size: 18px; font-weight: bold; margin-top: 20px;">' + message.innerHTML + '</div>' + '<pre>' + stackTrace.innerHTML + '</pre>' + '</div>';
+  return overlay;
+}
+
+function getParents(bundle, id) {
+  var modules = bundle.modules;
+
+  if (!modules) {
+    return [];
+  }
+
+  var parents = [];
+  var k, d, dep;
+
+  for (k in modules) {
+    for (d in modules[k][1]) {
+      dep = modules[k][1][d];
+
+      if (dep === id || Array.isArray(dep) && dep[dep.length - 1] === id) {
+        parents.push(k);
+      }
+    }
+  }
+
+  if (bundle.parent) {
+    parents = parents.concat(getParents(bundle.parent, id));
+  }
+
+  return parents;
+}
+
+function hmrApply(bundle, asset) {
+  var modules = bundle.modules;
+
+  if (!modules) {
+    return;
+  }
+
+  if (modules[asset.id] || !bundle.parent) {
+    var fn = new Function('require', 'module', 'exports', asset.generated.js);
+    asset.isNew = !modules[asset.id];
+    modules[asset.id] = [fn, asset.deps];
+  } else if (bundle.parent) {
+    hmrApply(bundle.parent, asset);
+  }
+}
+
+function hmrAcceptCheck(bundle, id) {
+  var modules = bundle.modules;
+
+  if (!modules) {
+    return;
+  }
+
+  if (!modules[id] && bundle.parent) {
+    return hmrAcceptCheck(bundle.parent, id);
+  }
+
+  if (checkedAssets[id]) {
+    return;
+  }
+
+  checkedAssets[id] = true;
+  var cached = bundle.cache[id];
+  assetsToAccept.push([bundle, id]);
+
+  if (cached && cached.hot && cached.hot._acceptCallbacks.length) {
+    return true;
+  }
+
+  return getParents(global.parcelRequire, id).some(function (id) {
+    return hmrAcceptCheck(global.parcelRequire, id);
+  });
+}
+
+function hmrAcceptRun(bundle, id) {
+  var cached = bundle.cache[id];
+  bundle.hotData = {};
+
+  if (cached) {
+    cached.hot.data = bundle.hotData;
+  }
+
+  if (cached && cached.hot && cached.hot._disposeCallbacks.length) {
+    cached.hot._disposeCallbacks.forEach(function (cb) {
+      cb(bundle.hotData);
+    });
+  }
+
+  delete bundle.cache[id];
+  bundle(id);
+  cached = bundle.cache[id];
+
+  if (cached && cached.hot && cached.hot._acceptCallbacks.length) {
+    cached.hot._acceptCallbacks.forEach(function (cb) {
+      cb();
+    });
+
+    return true;
+  }
+}
+},{}]},{},["../node_modules/parcel-bundler/src/builtins/hmr-runtime.js","app.js"], null)
