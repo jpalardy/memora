@@ -271,13 +271,11 @@ var utils = {
   findRelativeTo: function findRelativeTo(cards, selectedCard, dx, dy) {
     if (cards.length === 0) {
       return null;
-    }
+    } // up/left: last card -- down/right: first card
+
 
     if (!selectedCard) {
-      /* eslint-disable no-param-reassign */
-      dx = 0;
-      dy = 0;
-      /* eslint-enable no-param-reassign */
+      return dx === 1 || dy === 1 ? cards[0] : cards[cards.length - 1];
     }
 
     var groups = utils.groupBy(cards, function (card) {
@@ -650,7 +648,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59567" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52786" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
