@@ -1,4 +1,8 @@
 ---
+notifications:
+  email:
+    on_success: always
+
 language: go
 
 go:
