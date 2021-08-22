@@ -1,7 +1,7 @@
 
 # Memora
 
-[![travis-build-status](https://travis-ci.org/jpalardy/memora.svg?branch=master)](https://travis-ci.org/jpalardy/memora)
+[![Build Status](https://app.travis-ci.com/jpalardy/memora.svg?branch=main)](https://app.travis-ci.com/jpalardy/memora)
 
 Memora is a flashcard app, like [Supermemo](https://www.supermemo.com/),
 [Anki](http://ankisrs.net/), or one of the other software you can use to do
