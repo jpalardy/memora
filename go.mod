@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/gin-contrib/static v0.0.1
-	github.com/gin-gonic/gin v1.7.1
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/validator/v10 v10.5.0 // indirect
 	github.com/gobuffalo/here v0.6.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
