@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/gin-contrib/static"
@@ -13,21 +14,37 @@ import (
 type Server struct {
 	Filenames []string
 	AssetsDir string
+	Styles    []string
 }
 
 // AddRoutesTo func
-func (s Server) AddRoutesTo(router gin.IRoutes) {
+func (s Server) AddRoutesTo(router *gin.Engine) {
 	if s.AssetsDir == "" {
+		router.LoadHTMLFiles("public/index.html")
+		router.GET("/", s.getIndex)
 		router.Use(static.Serve("/", &binaryFileSystem{fs: pkger.Dir("/public")}))
 	} else {
 		fmt.Println("*** using assets from:", s.AssetsDir)
 		router.Use(static.Serve("/", static.LocalFile(s.AssetsDir, false)))
+	}
+	if len(s.Styles) > 0 {
+		pwd, err := os.Getwd()
+		if err != nil {
+			panic(err)
+		}
+		router.Use(static.Serve("/", static.LocalFile(pwd, false)))
 	}
 	router.GET("/decks.json", s.getDecks)
 	router.POST("/decks", s.postDecks)
 }
 
 //-------------------------------------------------
+
+func (s Server) getIndex(c *gin.Context) {
+	c.HTML(200, "index.html", gin.H{
+		"styles": s.Styles,
+	})
+}
 
 func (s Server) getDecks(c *gin.Context) {
 	today := time.Now().Format("2006-01-02")

@@ -16,6 +16,7 @@ type config struct {
 	filenames []string
 	port      int32
 	assetsDir string
+	styles    []string
 }
 
 func run(config config) {
@@ -27,6 +28,7 @@ func run(config config) {
 	s := server.Server{
 		Filenames: config.filenames,
 		AssetsDir: config.assetsDir,
+		Styles:    config.styles,
 	}
 	s.AddRoutesTo(router)
 
@@ -59,6 +61,7 @@ func Execute() {
 	}
 	rootCmd.PersistentFlags().Int32VarP(&config.port, "port", "p", 4567, "port to serve from")
 	rootCmd.PersistentFlags().StringVar(&config.assetsDir, "assets", "", "override dir for static assets (HTML, CSS, JS...)")
+	rootCmd.PersistentFlags().StringSliceVar(&config.styles, "style", make([]string, 0), "custom css filename")
 	rootCmd.Version = VERSION
 
 	if err := rootCmd.Execute(); err != nil {
