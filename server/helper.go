@@ -1,8 +1,11 @@
 package server
 
 import (
+	"html/template"
 	"net/http"
 	"strings"
+
+	"github.com/markbates/pkger"
 )
 
 // copied from github.com/gin-contrib/static/example/bindata/example.go
@@ -23,4 +26,22 @@ func (b *binaryFileSystem) Exists(prefix string, filepath string) bool {
 		return true
 	}
 	return false
+}
+
+// -------------------------------------------------
+
+func getIndexTemplate() (*template.Template, error) {
+	file, err := pkger.Open("/public/index.html")
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	bytes := make([]byte, 1000)
+	_, err = file.Read(bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return template.New("index.html").Parse(string(bytes))
 }

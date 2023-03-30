@@ -20,7 +20,11 @@ type Server struct {
 // AddRoutesTo func
 func (s Server) AddRoutesTo(router *gin.Engine) {
 	if s.AssetsDir == "" {
-		router.LoadHTMLFiles("public/index.html")
+		tmpl, err := getIndexTemplate()
+		if err != nil {
+			panic(err)
+		}
+		router.SetHTMLTemplate(tmpl)
 		router.GET("/", s.getIndex)
 		router.Use(static.Serve("/", &binaryFileSystem{fs: pkger.Dir("/public")}))
 	} else {
