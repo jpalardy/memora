@@ -7,7 +7,6 @@ build: pkged.go
 
 pkged.go: $(shell find public -type f)
 	pkger
-	goimports -w pkged.go
 
 .PHONY: lint
 lint:
