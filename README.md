@@ -1,8 +1,6 @@
 
 # Memora
 
-[![Build Status](https://app.travis-ci.com/jpalardy/memora.svg?branch=main)](https://app.travis-ci.com/jpalardy/memora)
-
 Memora is a flashcard app, like [Supermemo](https://www.supermemo.com/),
 [Anki](http://ankisrs.net/), or one of the other software you can use to do
 [spaced repetition](https://en.wikipedia.org/wiki/Spaced_repetition).
@@ -27,7 +25,7 @@ From source:
 
 The memora binary is compiled with the location of the assets (HTML,
 JavaScript, CSS) it needs to run its webapp. If the assets are moved, you'll
-need to recompile the binary or use the `-assets` flag when you run memora.
+need to recompile the binary or use the `--assets` flag when you run memora.
 
 
 ## How to use?
