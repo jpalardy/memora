@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"os/signal"
 
@@ -13,10 +14,11 @@ import (
 var VERSION = "???" // set externally by "go build"
 
 type config struct {
-	filenames []string
-	port      int32
-	assetsDir string
-	styles    []string
+	filenames   []string
+	port        int32
+	assetsDir   string
+	styles      []string
+	staticFiles fs.FS
 }
 
 func run(config config) {
@@ -26,9 +28,10 @@ func run(config config) {
 	router.Use(gin.Recovery())
 
 	s := server.Server{
-		Filenames: config.filenames,
-		AssetsDir: config.assetsDir,
-		Styles:    config.styles,
+		Filenames:   config.filenames,
+		AssetsDir:   config.assetsDir,
+		Styles:      config.styles,
+		StaticFiles: config.staticFiles,
 	}
 	s.AddRoutesTo(router)
 
@@ -48,8 +51,10 @@ func run(config config) {
 }
 
 // Execute runs the rootCmd
-func Execute() {
-	config := config{}
+func Execute(staticFiles fs.FS) {
+	config := config{
+		staticFiles: staticFiles,
+	}
 	rootCmd := &cobra.Command{
 		Use:   "memora [filenames]",
 		Short: "memora is spaced repetition flashcard app",

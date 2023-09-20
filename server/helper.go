@@ -4,8 +4,6 @@ import (
 	"html/template"
 	"net/http"
 	"strings"
-
-	"github.com/markbates/pkger"
 )
 
 // copied from github.com/gin-contrib/static/example/bindata/example.go
@@ -15,7 +13,7 @@ type binaryFileSystem struct {
 }
 
 func (b *binaryFileSystem) Open(name string) (http.File, error) {
-	return b.fs.Open("/" + name)
+	return b.fs.Open(name)
 }
 
 func (b *binaryFileSystem) Exists(prefix string, filepath string) bool {
@@ -28,10 +26,8 @@ func (b *binaryFileSystem) Exists(prefix string, filepath string) bool {
 	return false
 }
 
-// -------------------------------------------------
-
-func getIndexTemplate() (*template.Template, error) {
-	file, err := pkger.Open("/public/index.html")
+func (b *binaryFileSystem) getIndexTemplate() (*template.Template, error) {
+	file, err := b.fs.Open("/index.html")
 	if err != nil {
 		return nil, err
 	}

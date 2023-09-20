@@ -2,11 +2,8 @@
 VERSION = $(shell git describe --tags)
 
 .PHONY: build
-build: pkged.go
+build:
 	go build -ldflags "-X github.com/jpalardy/memora/cmd.VERSION=$(VERSION)-devel" -o bin/memora
-
-pkged.go: $(shell find public -type f)
-	pkger
 
 .PHONY: lint
 lint:
@@ -14,5 +11,5 @@ lint:
 
 .PHONY: clean
 clean:
-	rm -rf bin/ pkged.go
+	rm -rf bin/
 

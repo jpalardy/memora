@@ -2,31 +2,34 @@ package server
 
 import (
 	"fmt"
+	"io/fs"
+	"net/http"
 	"os"
 	"time"
 
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/jpalardy/memora/deck"
-	"github.com/markbates/pkger"
 )
 
 type Server struct {
-	Filenames []string
-	AssetsDir string
-	Styles    []string
+	Filenames   []string
+	AssetsDir   string
+	Styles      []string
+	StaticFiles fs.FS
 }
 
 // AddRoutesTo func
 func (s Server) AddRoutesTo(router *gin.Engine) {
 	if s.AssetsDir == "" {
-		tmpl, err := getIndexTemplate()
+		bfs := &binaryFileSystem{fs: http.FS(s.StaticFiles)}
+		tmpl, err := bfs.getIndexTemplate()
 		if err != nil {
 			panic(err)
 		}
 		router.SetHTMLTemplate(tmpl)
 		router.GET("/", s.getIndex)
-		router.Use(static.Serve("/", &binaryFileSystem{fs: pkger.Dir("/public")}))
+		router.Use(static.Serve("/", bfs))
 	} else {
 		fmt.Println("*** using assets from:", s.AssetsDir)
 		router.Use(static.Serve("/", static.LocalFile(s.AssetsDir, false)))
