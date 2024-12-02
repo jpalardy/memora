@@ -7,8 +7,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/gin-contrib/static"
-	"github.com/gin-gonic/gin"
 	"github.com/jpalardy/memora/deck"
 )
 
