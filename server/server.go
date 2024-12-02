@@ -1,14 +1,21 @@
 package server
 
 import (
-	"fmt"
+	"encoding/json"
 	"io/fs"
+	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/jpalardy/memora/deck"
 )
+
+func LoggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%s %s", r.Method, r.URL.String())
+		next.ServeHTTP(w, r)
+	})
+}
 
 type Server struct {
 	Filenames   []string
@@ -17,62 +24,65 @@ type Server struct {
 	StaticFiles fs.FS
 }
 
-// AddRoutesTo func
-func (s Server) AddRoutesTo(router *gin.Engine) {
+func (s *Server) NewHandler() http.Handler {
+	mux := http.NewServeMux()
+
+	// serve static files
 	if s.AssetsDir == "" {
-		bfs := &binaryFileSystem{fs: http.FS(s.StaticFiles)}
-		tmpl, err := bfs.getIndexTemplate()
-		if err != nil {
-			panic(err)
-		}
-		router.SetHTMLTemplate(tmpl)
-		router.GET("/", s.getIndex)
-		router.Use(static.Serve("/", bfs))
+		mux.Handle("/", http.FileServer(http.FS(s.StaticFiles)))
 	} else {
-		fmt.Println("*** using assets from:", s.AssetsDir)
-		router.Use(static.Serve("/", static.LocalFile(s.AssetsDir, false)))
+		log.Printf("*** using assets from: %s", s.AssetsDir)
+		mux.Handle("/", http.FileServer(http.Dir(s.AssetsDir)))
 	}
-	if len(s.Styles) > 0 {
-		pwd, err := os.Getwd()
-		if err != nil {
-			panic(err)
-		}
-		router.Use(static.Serve("/", static.LocalFile(pwd, false)))
-	}
-	router.GET("/decks.json", s.getDecks)
-	router.POST("/decks", s.postDecks)
+
+	mux.HandleFunc("/decks.json", s.getDecks)
+	mux.HandleFunc("/decks", s.postDecks)
+
+	return LoggingMiddleware(mux)
 }
 
 //-------------------------------------------------
 
-func (s Server) getIndex(c *gin.Context) {
-	c.HTML(200, "index.html", gin.H{
-		"styles": s.Styles,
-	})
-}
+func (s Server) getDecks(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 
-func (s Server) getDecks(c *gin.Context) {
 	today := time.Now().Format("2006-01-02")
 	decks := make([]deck.ClientDeck, 0, len(s.Filenames))
+
 	for _, filename := range s.Filenames {
 		d, err := deck.Read(filename)
 		if err != nil {
-			c.String(500, err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		decks = append(decks, d.Filter(today).ToClient())
 	}
-	c.JSON(200, decks)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(decks)
 }
 
-func (s Server) postDecks(c *gin.Context) {
+func (s Server) postDecks(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	var updates []deck.Update
-	if err := c.ShouldBindJSON(&updates); err != nil {
-		c.String(400, "Invalid JSON")
+
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&updates); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
+
 	if err := deck.UpdateFromClient(updates); err != nil {
-		c.String(500, err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	w.WriteHeader(http.StatusOK)
 }
