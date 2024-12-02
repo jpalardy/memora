@@ -27,6 +27,16 @@ type Server struct {
 func (s *Server) NewHandler() http.Handler {
 	mux := http.NewServeMux()
 
+	// create handlers for styles
+	for _, style := range s.Styles {
+		style_ := style
+		mux.Handle("/"+style, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/css")
+			http.ServeFile(w, r, style_)
+		}))
+	}
+	mux.HandleFunc("/styles.json", s.getStyles)
+
 	// serve static files
 	if s.AssetsDir == "" {
 		mux.Handle("/", http.FileServer(http.FS(s.StaticFiles)))
@@ -85,4 +95,14 @@ func (s Server) postDecks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (s Server) getStyles(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(s.Styles)
 }
