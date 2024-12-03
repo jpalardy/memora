@@ -10,13 +10,6 @@ import (
 	"github.com/jpalardy/memora/deck"
 )
 
-func LoggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s %s", r.Method, r.URL.String())
-		next.ServeHTTP(w, r)
-	})
-}
-
 type Server struct {
 	Filenames   []string
 	AssetsDir   string
@@ -27,28 +20,18 @@ type Server struct {
 func (s *Server) NewHandler() http.Handler {
 	mux := http.NewServeMux()
 
-	// create handlers for styles
-	for _, style := range s.Styles {
-		style_ := style
-		mux.Handle("/"+style, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "text/css")
-			http.ServeFile(w, r, style_)
-		}))
-	}
-	mux.HandleFunc("/styles.json", s.getStyles)
-
-	// serve static files
 	if s.AssetsDir == "" {
-		mux.Handle("/", http.FileServer(http.FS(s.StaticFiles)))
+		mux.Handle("/", overlay(http.FS(s.StaticFiles)))
 	} else {
 		log.Printf("*** using assets from: %s", s.AssetsDir)
-		mux.Handle("/", http.FileServer(http.Dir(s.AssetsDir)))
+		mux.Handle("/", overlay(http.Dir(s.AssetsDir)))
 	}
 
+	mux.HandleFunc("/styles.json", s.getStyles)
 	mux.HandleFunc("/decks.json", s.getDecks)
 	mux.HandleFunc("/decks", s.postDecks)
 
-	return LoggingMiddleware(mux)
+	return logRequest(mux)
 }
 
 //-------------------------------------------------
