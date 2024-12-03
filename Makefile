@@ -5,6 +5,10 @@ VERSION = $(shell git describe --tags)
 build:
 	go build -ldflags "-X github.com/jpalardy/memora/cmd.VERSION=$(VERSION)-devel" -o bin/memora
 
+.PHONY: build-macos
+build-macos:
+	env GOOS=darwin GOARCH=arm64 $(MAKE) build
+
 .PHONY: lint
 lint:
 	golangci-lint run --enable-all

@@ -3,10 +3,11 @@ package cmd
 import (
 	"fmt"
 	"io/fs"
+	"log"
+	"net/http"
 	"os"
 	"os/signal"
 
-	"github.com/gin-gonic/gin"
 	"github.com/jpalardy/memora/server"
 	"github.com/spf13/cobra"
 )
@@ -22,18 +23,13 @@ type config struct {
 }
 
 func run(config config) {
-	// comment out for debug mode
-	gin.SetMode(gin.ReleaseMode)
-	router := gin.New()
-	router.Use(gin.Recovery())
-
 	s := server.Server{
 		Filenames:   config.filenames,
 		AssetsDir:   config.assetsDir,
 		Styles:      config.styles,
 		StaticFiles: config.staticFiles,
 	}
-	s.AddRoutesTo(router)
+	mux := s.NewHandler()
 
 	// normal exit on ctrl-c
 	c := make(chan os.Signal, 1)
@@ -44,8 +40,8 @@ func run(config config) {
 	}()
 
 	addr := fmt.Sprintf("127.0.0.1:%d", config.port)
-	fmt.Println("listening on", addr)
-	if err := router.Run(addr); err != nil {
+	log.Printf("serving on http://%s", addr)
+	if err := http.ListenAndServe(addr, mux); err != nil {
 		panic(err)
 	}
 }
