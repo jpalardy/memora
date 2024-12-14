@@ -28,6 +28,7 @@ func run(config config) {
 		AssetsDir:   config.assetsDir,
 		Styles:      config.styles,
 		StaticFiles: config.staticFiles,
+		Debug:       os.Getenv("DEBUG") == "true",
 	}
 	mux := s.NewHandler()
 

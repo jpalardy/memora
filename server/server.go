@@ -15,23 +15,24 @@ type Server struct {
 	AssetsDir   string
 	Styles      []string
 	StaticFiles fs.FS
+	Debug       bool
 }
 
 func (s *Server) NewHandler() http.Handler {
 	mux := http.NewServeMux()
 
-	if s.AssetsDir == "" {
-		mux.Handle("/", overlay(http.FS(s.StaticFiles)))
-	} else {
+	assetHandler := overlay(http.FS(s.StaticFiles))
+	if s.AssetsDir != "" {
 		log.Printf("*** using assets from: %s", s.AssetsDir)
-		mux.Handle("/", overlay(http.Dir(s.AssetsDir)))
+		assetHandler = overlay(http.Dir(s.AssetsDir))
 	}
 
+	mux.HandleFunc("/", logRequest(assetHandler, s.Debug))
 	mux.HandleFunc("/styles.json", s.getStyles)
-	mux.HandleFunc("/decks.json", s.getDecks)
-	mux.HandleFunc("/decks", s.postDecks)
+	mux.HandleFunc("/decks.json", logRequest(s.getDecks, true))
+	mux.HandleFunc("/decks", logRequest(s.postDecks, true))
 
-	return logRequest(mux)
+	return mux
 }
 
 //-------------------------------------------------
