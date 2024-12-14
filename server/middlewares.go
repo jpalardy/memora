@@ -5,18 +5,18 @@ import (
 	"net/http"
 )
 
-func overlay(primary http.FileSystem) http.HandlerFunc {
-	primaryFS := http.FileServer(primary)
-	secondaryFS := http.FileServer(http.Dir("."))
+func overlay(primary http.FileSystem, debug bool) http.HandlerFunc {
+	primaryFSHandler := logRequest(http.FileServer(primary).ServeHTTP, debug)
+	secondaryFSHandler := logRequest(http.FileServer(http.Dir(".")).ServeHTTP, true)
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		f, err := primary.Open(r.URL.Path)
 		if err == nil {
 			f.Close()
-			primaryFS.ServeHTTP(w, r)
+			primaryFSHandler(w, r)
 			return
 		}
-		secondaryFS.ServeHTTP(w, r)
+		secondaryFSHandler(w, r)
 	}
 }
 
