@@ -35,6 +35,22 @@ func (s *Server) NewHandler() http.Handler {
 	return mux
 }
 
+func readDecks(filenames []string) ([]deck.ClientDeck, error) {
+	today := time.Now().Format("2006-01-02")
+	decks := make([]deck.ClientDeck, 0, len(filenames))
+
+	for _, filename := range filenames {
+		d, err := deck.Read(filename)
+		if err != nil {
+			// http.Error(w, err.Error(), http.StatusInternalServerError)
+			return nil, err
+		}
+		decks = append(decks, d.Filter(today).ToClient())
+	}
+
+	return decks, nil
+}
+
 //-------------------------------------------------
 
 func (s Server) getDecks(w http.ResponseWriter, r *http.Request) {
@@ -43,16 +59,10 @@ func (s Server) getDecks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	today := time.Now().Format("2006-01-02")
-	decks := make([]deck.ClientDeck, 0, len(s.Filenames))
-
-	for _, filename := range s.Filenames {
-		d, err := deck.Read(filename)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		decks = append(decks, d.Filter(today).ToClient())
+	decks, err := readDecks(s.Filenames)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -78,7 +88,14 @@ func (s Server) postDecks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	decks, err := readDecks(s.Filenames)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(decks)
 }
 
 func (s Server) getStyles(w http.ResponseWriter, r *http.Request) {
