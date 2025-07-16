@@ -7,10 +7,10 @@ import (
 	"github.com/jpalardy/memora/cmd"
 )
 
-//go:embed public
+//go:embed web/public
 var publicFiles embed.FS
 
 func main() {
-	staticFiles, _ := fs.Sub(publicFiles, "public")
+	staticFiles, _ := fs.Sub(publicFiles, "web/public")
 	cmd.Execute(staticFiles)
 }
