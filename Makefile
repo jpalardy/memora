@@ -2,11 +2,9 @@
 VERSION = $(shell git describe --tags)
 
 .PHONY: build
-build: web/public/js/app.js
-	go build -ldflags "-X github.com/jpalardy/memora/cmd.VERSION=$(VERSION)-devel" -o bin/memora
-
-web/public/js/app.js:
+build:
 	make -C web optimize
+	go build -ldflags "-X github.com/jpalardy/memora/cmd.VERSION=$(VERSION)-devel" -o bin/memora
 
 .PHONY: build-macos
 build-macos:
