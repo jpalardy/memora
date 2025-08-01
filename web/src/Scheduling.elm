@@ -35,6 +35,7 @@ update now card =
                     card.last
                         |> Maybe.map (daysBetween now)
                         |> Maybe.withDefault 0
+                        |> max 0
             in
             Just { mark = 1, jumpRange = doubler daysSinceLast }
 

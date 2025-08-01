@@ -81,5 +81,10 @@ suite =
                     cardFor Passed -10
                         |> Scheduling.update testTime
                         |> Expect.equal (Just { mark = 1, jumpRange = ( 18, 22 ) })
+            , test "schedules a future card for tomorrow" <|
+                \_ ->
+                    cardFor Passed 10
+                        |> Scheduling.update testTime
+                        |> Expect.equal (Just { mark = 1, jumpRange = ( 1, 1 ) })
             ]
         ]
