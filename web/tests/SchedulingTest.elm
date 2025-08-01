@@ -14,6 +14,14 @@ testTime =
     Time.millisToPosix 1754029842000
 
 
+cardFor : Grade -> Int -> { question : String, grade : Grade, last : Maybe Time.Posix }
+cardFor grade daysDiff =
+    { question = "answer to everything"
+    , grade = grade
+    , last = Just <| addDays testTime daysDiff
+    }
+
+
 suite : Test
 suite =
     describe "Scheduling module"
@@ -54,55 +62,24 @@ suite =
         , describe "update"
             [ test "schedules a failed card for tomorrow" <|
                 \_ ->
-                    let
-                        failedCard =
-                            { question = "answer to everything"
-                            , grade = Failed
-                            , last = Just <| addDays testTime -10
-                            }
-
-                        update =
-                            Scheduling.update testTime failedCard
-                    in
-                    update |> Expect.equal (Just { mark = 0, jumpRange = ( 1, 1 ) })
+                    cardFor Failed -10
+                        |> Scheduling.update testTime
+                        |> Expect.equal (Just { mark = 0, jumpRange = ( 1, 1 ) })
             , test "doesn't schedule a neutral card" <|
                 \_ ->
-                    let
-                        failedCard =
-                            { question = "answer to everything"
-                            , grade = Neutral
-                            , last = Just <| addDays testTime -10
-                            }
-
-                        update =
-                            Scheduling.update testTime failedCard
-                    in
-                    update |> Expect.equal Nothing
+                    cardFor Neutral -10
+                        |> Scheduling.update testTime
+                        |> Expect.equal Nothing
             , test "schedules a (new) passed card for tomorrow" <|
                 \_ ->
-                    let
-                        failedCard =
-                            { question = "answer to everything"
-                            , grade = Passed
-                            , last = Nothing
-                            }
-
-                        update =
-                            Scheduling.update testTime failedCard
-                    in
-                    update |> Expect.equal (Just { mark = 1, jumpRange = ( 1, 1 ) })
+                    cardFor Passed -10
+                        |> (\c -> { c | last = Nothing })
+                        |> Scheduling.update testTime
+                        |> Expect.equal (Just { mark = 1, jumpRange = ( 1, 1 ) })
             , test "schedules an (old) passed card for the future" <|
                 \_ ->
-                    let
-                        failedCard =
-                            { question = "answer to everything"
-                            , grade = Passed
-                            , last = Just <| addDays testTime -10
-                            }
-
-                        update =
-                            Scheduling.update testTime failedCard
-                    in
-                    update |> Expect.equal (Just { mark = 1, jumpRange = ( 18, 22 ) })
+                    cardFor Passed -10
+                        |> Scheduling.update testTime
+                        |> Expect.equal (Just { mark = 1, jumpRange = ( 18, 22 ) })
             ]
         ]
