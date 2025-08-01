@@ -33,7 +33,7 @@ update now seed card =
         Passed ->
             let
                 daysSinceLast =
-                    card.last |> Maybe.map (daysBetween now) |> Maybe.withDefault 1
+                    card.last |> Maybe.map (daysBetween now) |> Maybe.withDefault 0
 
                 ( days, newSeed ) =
                     let
@@ -45,4 +45,4 @@ update now seed card =
             ( newSeed, [ ( card.question, { mark = 1, next = days |> addDays now |> isoDay } ) ] )
 
         Failed ->
-            ( seed, [ ( card.question, { mark = 0, next = isoDay now } ) ] )
+            ( seed, [ ( card.question, { mark = 0, next = addDays now 1 |> isoDay } ) ] )

@@ -1,9 +1,18 @@
 module SchedulingTest exposing (..)
 
+import DomainTypes exposing (..)
 import Expect
 import Fuzz
+import PosixUtils exposing (..)
+import Random
 import Scheduling
 import Test exposing (..)
+import Time
+
+
+testTime : Time.Posix
+testTime =
+    Time.millisToPosix 1754029842000
 
 
 suite : Test
@@ -42,5 +51,77 @@ suite =
                         , Expect.lessThan high
                         ]
                         n
+            ]
+        , describe "update"
+            [ fuzz Fuzz.int "schedules a failed card for tomorrow" <|
+                \n ->
+                    let
+                        seed =
+                            Random.initialSeed n
+
+                        failedCard =
+                            { question = "answer to everything"
+                            , grade = Failed
+                            , last = Just <| addDays testTime -10
+                            }
+
+                        ( _, updatedCards ) =
+                            Scheduling.update testTime seed failedCard
+                    in
+                    updatedCards
+                        |> Expect.equal [ ( "answer to everything", { mark = 0, next = addDays testTime 1 |> isoDay } ) ]
+            , fuzz Fuzz.int "doesn't schedule a neutral card" <|
+                \n ->
+                    let
+                        seed =
+                            Random.initialSeed n
+
+                        failedCard =
+                            { question = "answer to everything"
+                            , grade = Neutral
+                            , last = Just <| addDays testTime -10
+                            }
+
+                        ( _, updatedCards ) =
+                            Scheduling.update testTime seed failedCard
+                    in
+                    updatedCards
+                        |> Expect.equal []
+            , fuzz Fuzz.int "schedules a (new) passed card for tomorrow" <|
+                \n ->
+                    let
+                        seed =
+                            Random.initialSeed n
+
+                        failedCard =
+                            { question = "answer to everything"
+                            , grade = Passed
+                            , last = Nothing
+                            }
+
+                        ( _, updatedCards ) =
+                            Scheduling.update testTime seed failedCard
+                    in
+                    updatedCards
+                        |> Expect.equal [ ( "answer to everything", { mark = 1, next = addDays testTime 1 |> isoDay } ) ]
+            , fuzz Fuzz.int "schedules an (old) passed card for the future" <|
+                \n ->
+                    let
+                        seed =
+                            Random.initialSeed n
+
+                        failedCard =
+                            { question = "answer to everything"
+                            , grade = Passed
+                            , last = Just <| addDays testTime -10
+                            }
+
+                        ( _, updatedCards ) =
+                            Scheduling.update testTime seed failedCard
+                    in
+                    updatedCards
+                        |> List.map (Tuple.second >> .next)
+                        |> List.all (\d -> d > isoDay testTime)
+                        |> Expect.equal True
             ]
         ]
