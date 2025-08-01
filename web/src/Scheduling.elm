@@ -1,8 +1,7 @@
 module Scheduling exposing (..)
 
-import DomainTypes exposing (..)
-import PosixUtils exposing (..)
-import Random
+import DomainTypes exposing (Grade(..))
+import PosixUtils exposing (daysBetween)
 import Time
 
 
@@ -24,25 +23,20 @@ doubler d =
             ( floor <| 1.8 * fd, ceiling <| 2.2 * fd )
 
 
-update : Time.Posix -> Random.Seed -> { a | grade : Grade, last : Maybe Time.Posix, question : b } -> ( Random.Seed, List ( b, { mark : number, next : String } ) )
-update now seed card =
+update : Time.Posix -> { a | grade : Grade, last : Maybe Time.Posix } -> Maybe { mark : number, jumpRange : ( Int, Int ) }
+update now card =
     case card.grade of
         Neutral ->
-            ( seed, [] )
+            Nothing
 
         Passed ->
             let
                 daysSinceLast =
-                    card.last |> Maybe.map (daysBetween now) |> Maybe.withDefault 0
-
-                ( days, newSeed ) =
-                    let
-                        ( low, high ) =
-                            doubler daysSinceLast
-                    in
-                    Random.step (Random.int low high) seed
+                    card.last
+                        |> Maybe.map (daysBetween now)
+                        |> Maybe.withDefault 0
             in
-            ( newSeed, [ ( card.question, { mark = 1, next = days |> addDays now |> isoDay } ) ] )
+            Just { mark = 1, jumpRange = doubler daysSinceLast }
 
         Failed ->
-            ( seed, [ ( card.question, { mark = 0, next = addDays now 1 |> isoDay } ) ] )
+            Just { mark = 0, jumpRange = ( 1, 1 ) }

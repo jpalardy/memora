@@ -4,7 +4,6 @@ import DomainTypes exposing (..)
 import Expect
 import Fuzz
 import PosixUtils exposing (..)
-import Random
 import Scheduling
 import Test exposing (..)
 import Time
@@ -53,75 +52,57 @@ suite =
                         n
             ]
         , describe "update"
-            [ fuzz Fuzz.int "schedules a failed card for tomorrow" <|
-                \n ->
+            [ test "schedules a failed card for tomorrow" <|
+                \_ ->
                     let
-                        seed =
-                            Random.initialSeed n
-
                         failedCard =
                             { question = "answer to everything"
                             , grade = Failed
                             , last = Just <| addDays testTime -10
                             }
 
-                        ( _, updatedCards ) =
-                            Scheduling.update testTime seed failedCard
+                        update =
+                            Scheduling.update testTime failedCard
                     in
-                    updatedCards
-                        |> Expect.equal [ ( "answer to everything", { mark = 0, next = addDays testTime 1 |> isoDay } ) ]
-            , fuzz Fuzz.int "doesn't schedule a neutral card" <|
-                \n ->
+                    update |> Expect.equal (Just { mark = 0, jumpRange = ( 1, 1 ) })
+            , test "doesn't schedule a neutral card" <|
+                \_ ->
                     let
-                        seed =
-                            Random.initialSeed n
-
                         failedCard =
                             { question = "answer to everything"
                             , grade = Neutral
                             , last = Just <| addDays testTime -10
                             }
 
-                        ( _, updatedCards ) =
-                            Scheduling.update testTime seed failedCard
+                        update =
+                            Scheduling.update testTime failedCard
                     in
-                    updatedCards
-                        |> Expect.equal []
-            , fuzz Fuzz.int "schedules a (new) passed card for tomorrow" <|
-                \n ->
+                    update |> Expect.equal Nothing
+            , test "schedules a (new) passed card for tomorrow" <|
+                \_ ->
                     let
-                        seed =
-                            Random.initialSeed n
-
                         failedCard =
                             { question = "answer to everything"
                             , grade = Passed
                             , last = Nothing
                             }
 
-                        ( _, updatedCards ) =
-                            Scheduling.update testTime seed failedCard
+                        update =
+                            Scheduling.update testTime failedCard
                     in
-                    updatedCards
-                        |> Expect.equal [ ( "answer to everything", { mark = 1, next = addDays testTime 1 |> isoDay } ) ]
-            , fuzz Fuzz.int "schedules an (old) passed card for the future" <|
-                \n ->
+                    update |> Expect.equal (Just { mark = 1, jumpRange = ( 1, 1 ) })
+            , test "schedules an (old) passed card for the future" <|
+                \_ ->
                     let
-                        seed =
-                            Random.initialSeed n
-
                         failedCard =
                             { question = "answer to everything"
                             , grade = Passed
                             , last = Just <| addDays testTime -10
                             }
 
-                        ( _, updatedCards ) =
-                            Scheduling.update testTime seed failedCard
+                        update =
+                            Scheduling.update testTime failedCard
                     in
-                    updatedCards
-                        |> List.map (Tuple.second >> .next)
-                        |> List.all (\d -> d > isoDay testTime)
-                        |> Expect.equal True
+                    update |> Expect.equal (Just { mark = 1, jumpRange = ( 18, 22 ) })
             ]
         ]
