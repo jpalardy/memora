@@ -6,15 +6,19 @@ import Random
 import Time
 
 
-doubler : Int -> Random.Generator Int
+doubler : Int -> ( Int, Int )
 doubler d =
     case d of
         1 ->
-            Random.constant 2
+            ( 2, 2 )
 
         _ ->
-            -- "doubling" d : d * 1.8..2.2
-            Random.int (18 * d // 10) (22 * d // 10)
+            -- "doubling" fd : fd * 1.8..2.2
+            let
+                fd =
+                    toFloat d
+            in
+            ( floor <| 1.8 * fd, ceiling <| 2.2 * fd )
 
 
 update : Time.Posix -> Random.Seed -> { a | grade : Grade, last : Maybe Time.Posix, question : b } -> ( Random.Seed, List ( b, { mark : number, next : String } ) )
@@ -29,7 +33,11 @@ update now seed card =
                     card.last |> Maybe.map (daysBetween now) |> Maybe.withDefault 1
 
                 ( days, newSeed ) =
-                    Random.step (doubler daysSinceLast) seed
+                    let
+                        ( low, high ) =
+                            doubler daysSinceLast
+                    in
+                    Random.step (Random.int low high) seed
             in
             ( newSeed, [ ( card.question, { mark = 1, next = days |> addDays now |> isoDay } ) ] )
 

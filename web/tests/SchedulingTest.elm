@@ -2,7 +2,6 @@ module SchedulingTest exposing (..)
 
 import Expect
 import Fuzz
-import Random
 import Scheduling
 import Test exposing (..)
 
@@ -10,39 +9,37 @@ import Test exposing (..)
 suite : Test
 suite =
     describe "Scheduling module"
-        [ describe "doubler"
-            [ fuzz Fuzz.int "always returns 2 for 1" <|
+        [ describe "doubler on fixed values" <|
+            ([ { value = 1, expected = ( 2, 2 ) }
+             , { value = 2, expected = ( 3, 5 ) }
+             , { value = 3, expected = ( 5, 7 ) }
+             , { value = 4, expected = ( 7, 9 ) }
+             , { value = 5, expected = ( 9, 11 ) }
+             , { value = 6, expected = ( 10, 14 ) }
+             , { value = 7, expected = ( 12, 16 ) }
+             , { value = 8, expected = ( 14, 18 ) }
+             , { value = 9, expected = ( 16, 20 ) }
+             , { value = 10, expected = ( 18, 22 ) }
+             ]
+                |> List.map
+                    (\example ->
+                        test ("returns a (rough) doubling, value = " ++ String.fromInt example.value)
+                            (\_ ->
+                                Scheduling.doubler example.value |> Expect.equal example.expected
+                            )
+                    )
+            )
+        , describe "doubler on all values"
+            [ fuzz (Fuzz.intAtLeast 1) "always returns larger values" <|
                 \n ->
                     let
-                        seed =
-                            Random.initialSeed n
-
-                        ( result, _ ) =
-                            Random.step (Scheduling.doubler 1) seed
+                        ( low, high ) =
+                            Scheduling.doubler n
                     in
-                    result
-                        |> Expect.equal 2
-            , fuzz (Fuzz.pair Fuzz.int (Fuzz.intRange 2 1000)) "always returns roughly double the given value (>= 1.8)" <|
-                \( n, days ) ->
-                    let
-                        seed =
-                            Random.initialSeed n
-
-                        ( result, _ ) =
-                            Random.step (Scheduling.doubler days) seed
-                    in
-                    result
-                        |> Expect.atLeast (days * 18 // 10)
-            , fuzz (Fuzz.pair Fuzz.int (Fuzz.intRange 2 1000)) "always returns roughly double the given value (<= 2.2)" <|
-                \( n, days ) ->
-                    let
-                        seed =
-                            Random.initialSeed n
-
-                        ( result, _ ) =
-                            Random.step (Scheduling.doubler days) seed
-                    in
-                    result
-                        |> Expect.atMost (days * 22 // 10)
+                    Expect.all
+                        [ Expect.lessThan low
+                        , Expect.lessThan high
+                        ]
+                        n
             ]
         ]
