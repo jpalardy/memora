@@ -9,6 +9,9 @@ import Time
 doubler : Int -> ( Int, Int )
 doubler d =
     case d of
+        0 ->
+            ( 1, 1 )
+
         1 ->
             ( 2, 2 )
 

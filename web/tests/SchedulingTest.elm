@@ -10,7 +10,8 @@ suite : Test
 suite =
     describe "Scheduling module"
         [ describe "doubler on fixed values" <|
-            ([ { value = 1, expected = ( 2, 2 ) }
+            ([ { value = 0, expected = ( 1, 1 ) }
+             , { value = 1, expected = ( 2, 2 ) }
              , { value = 2, expected = ( 3, 5 ) }
              , { value = 3, expected = ( 5, 7 ) }
              , { value = 4, expected = ( 7, 9 ) }
@@ -30,7 +31,7 @@ suite =
                     )
             )
         , describe "doubler on all values"
-            [ fuzz (Fuzz.intAtLeast 1) "always returns larger values" <|
+            [ fuzz (Fuzz.intAtLeast 0) "always returns larger values" <|
                 \n ->
                     let
                         ( low, high ) =
