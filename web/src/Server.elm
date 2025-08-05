@@ -111,16 +111,46 @@ generateDeckUpdates decks now =
         updatesForDeck currentSeed deck =
             let
                 ( nextSeed, deckUpdates ) =
-                    mapWithSeed currentSeed (Scheduling.update now) deck.cards
+                    mapWithSeed currentSeed (updateWrapper now) deck.cards
             in
             ( nextSeed
-            , { filename = deck.filename, updates = deckUpdates |> List.concat |> Dict.fromList }
+            , { filename = deck.filename, updates = deckUpdates |> List.filterMap identity |> Dict.fromList }
             )
     in
     decks
         |> mapWithSeed seed updatesForDeck
         |> Tuple.second
         |> List.filter (not << Dict.isEmpty << .updates)
+
+
+
+-------------------------------------------------
+-- helpers
+-------------------------------------------------
+
+
+updateWrapper : Time.Posix -> Random.Seed -> Card -> ( Random.Seed, Maybe ( String, { mark : number, next : String } ) )
+updateWrapper now seed card =
+    let
+        cardUpdate =
+            Scheduling.update now card
+    in
+    case cardUpdate of
+        Nothing ->
+            ( seed, Nothing )
+
+        Just update ->
+            let
+                ( low, high ) =
+                    update.jumpRange
+
+                ( days, newSeed ) =
+                    Random.step (Random.int low high) seed
+
+                next =
+                    days |> addDays now |> isoDay
+            in
+            ( newSeed, Just ( card.question, { mark = update.mark, next = next } ) )
 
 
 mapWithSeed : Random.Seed -> (Random.Seed -> a -> ( Random.Seed, b )) -> List a -> ( Random.Seed, List b )

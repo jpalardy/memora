@@ -1,37 +1,43 @@
 module Scheduling exposing (..)
 
-import DomainTypes exposing (..)
-import PosixUtils exposing (..)
-import Random
+import DomainTypes exposing (Grade(..))
+import PosixUtils exposing (daysBetween)
 import Time
 
 
-doubler : Int -> Random.Generator Int
+doubler : Int -> ( Int, Int )
 doubler d =
     case d of
+        0 ->
+            ( 1, 1 )
+
         1 ->
-            Random.constant 2
+            ( 2, 2 )
 
         _ ->
-            -- "doubling" d : d * 1.8..2.2
-            Random.int (18 * d // 10) (22 * d // 10)
+            -- "doubling" fd : fd * 1.8..2.2
+            let
+                fd =
+                    toFloat d
+            in
+            ( floor <| 1.8 * fd, ceiling <| 2.2 * fd )
 
 
-update : Time.Posix -> Random.Seed -> { a | grade : Grade, last : Maybe Time.Posix, question : b } -> ( Random.Seed, List ( b, { mark : number, next : String } ) )
-update now seed card =
+update : Time.Posix -> { a | grade : Grade, last : Maybe Time.Posix } -> Maybe { mark : number, jumpRange : ( Int, Int ) }
+update now card =
     case card.grade of
         Neutral ->
-            ( seed, [] )
+            Nothing
 
         Passed ->
             let
                 daysSinceLast =
-                    card.last |> Maybe.map (daysBetween now) |> Maybe.withDefault 1
-
-                ( days, newSeed ) =
-                    Random.step (doubler daysSinceLast) seed
+                    card.last
+                        |> Maybe.map (daysBetween now)
+                        |> Maybe.withDefault 0
+                        |> max 0
             in
-            ( newSeed, [ ( card.question, { mark = 1, next = days |> addDays now |> isoDay } ) ] )
+            Just { mark = 1, jumpRange = doubler daysSinceLast }
 
         Failed ->
-            ( seed, [ ( card.question, { mark = 0, next = isoDay now } ) ] )
+            Just { mark = 0, jumpRange = ( 1, 1 ) }
