@@ -30,6 +30,12 @@ window.addEventListener(
       return;
     }
 
+    if (keys === "Meta-c" || keys === "Ctrl-c") {
+      ev.preventDefault();
+      app.ports.preventedKeydown.send("Copy");
+      return;
+    }
+
     if (keys === "Meta-s" || keys === "Ctrl-s") {
       ev.preventDefault();
       app.ports.preventedKeydown.send("Save");
@@ -107,3 +113,7 @@ const scrollToSelected = debounce(() => {
 }, 100);
 
 app.ports.scrollToSelected.subscribe(scrollToSelected);
+
+app.ports.copyText.subscribe((text) => {
+  navigator.clipboard.writeText(text);
+});

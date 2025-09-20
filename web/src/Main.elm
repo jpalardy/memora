@@ -165,6 +165,9 @@ port mouseMoved : (() -> msg) -> Sub msg
 port scrollToSelected : () -> Cmd msg
 
 
+port copyText : String -> Cmd msg
+
+
 
 -------------------------------------------------
 
@@ -265,6 +268,17 @@ update msg model =
 
         KeyDown _ ->
             ( model, Cmd.none )
+
+        PreventedKeyDown "Copy" ->
+            case model.focus of
+                None ->
+                    ( model, Cmd.none )
+
+                Selected card ->
+                    ( model, copyText card.question )
+
+                Flipped card ->
+                    ( model, copyText card.answer )
 
         PreventedKeyDown "Save" ->
             case model.decks of
