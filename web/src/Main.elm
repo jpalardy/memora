@@ -399,9 +399,27 @@ viewDecks now focus mouseDisabled decks =
 
 viewDeck : Time.Posix -> Focus -> Deck -> Html Msg
 viewDeck now focus deck =
+    let
+        gradedCount =
+            List.Extra.count (.grade >> (/=) Neutral) deck.cards
+
+        cardCountText =
+            pluralize (List.length deck.cards) "card" "cards"
+
+        gradedCountText =
+            case gradedCount of
+                0 ->
+                    ""
+
+                count ->
+                    "; " ++ String.fromInt count ++ " graded"
+
+        subtext =
+            cardCountText ++ gradedCountText
+    in
     div [ class "deck" ]
         [ h2 [] [ text deck.filename ]
-        , h3 [ class "subtext" ] [ text <| pluralize (List.length deck.cards) "card" "cards" ]
+        , h3 [ class "subtext" ] [ text <| subtext ]
         , Html.Keyed.node "div" [ class "cards" ] <| List.map (viewCard now focus) deck.cards
         ]
 
